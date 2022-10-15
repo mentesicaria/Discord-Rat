@@ -104,11 +104,11 @@ Rafel-Rat is built for Educational and Internal use ONLY.</b>
 <p align="center">  
 <img src="https://user-images.githubusercontent.com/46685308/113503828-f88fdf00-9551-11eb-9815-7371515655c1.png"></img>
 </p>
-<h2 align="center">Inspired From Raptor-Rat</h2>
+<h2 align="center">(https://github.com/swagkarna/Rafel-Rat)</h2>
 
 ---
 ### ❤️Supporters❤️
-[![Stargazers repo roster for @swagkarna/Rafel-Rat](https://reporoster.com/stars/swagkarna/Rafel-Rat)](https://github.com/swagkarna/Rafel-Rat/stargazers)
-[![Forkers repo roster for @swagkarna/Rafel-Rat](https://reporoster.com/forks/swagkarna/Rafel-Rat)](https://github.com/swagkarna/Rafel-Rat/network/members)
+[![Stargazers repo roster for @BlackDemonHat/Discord-Rat](https://reporoster.com/stars/BlackDemonHat/Discord-Rat)](https://github.com/BlackDemonHat/Discord-Rat/stargazers)
+[![Forkers repo roster for @BlackDemonHat/Discord-Rat](https://reporoster.com/forks/BlackDemonHat/Discord-Rat)](https://github.com/BlackDemonHat/Discord-Rat/network/members)
 
 ---
