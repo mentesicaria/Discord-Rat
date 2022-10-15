@@ -96,7 +96,7 @@ Watch Video in Full Screen For Better Quality
 ## Screenshots[New]
 | | | |
 |:-------------------------:|:-------------------------:|:-------------------------:|
-|<a href="https://github.com/BlackDemonHat/Discord-Rat/images/Screenshot(1).png?raw=true"> <img width="2000" src="https://github.com/BlackDemonHat/Discord-Rat/images/Screenshot(2).png?raw=true?raw=true"> Panel-1</a> | <a href="https://github.com/BlackDemonHat/Discord-Rat/images/Screenshot(3).png?raw=true?raw=true"> <img width="2000" src="https://github.com/swagkarna/Rafel-Rat/blob/main/Screenshots/Screenshot%20(71).png?raw=true"> Panel-2</a> |<a href="https://github.com/swagkarna/Rafel-Rat/blob/main/Screenshots/Screenshot%20(72).png?raw=trueg"> <img width="2000" src="https://github.com/swagkarna/Rafel-Rat/blob/main/Screenshots/Screenshot%20(72).png?raw=true"> Panel-3 </a>||
+|<a href="https://github.com/BlackDemonHat/Discord-Rat/images/Screenshot1.png?raw=true"> <img width="2000" src="https://github.com/BlackDemonHat/Discord-Rat/images/Screenshot1.png?raw=true?raw=true"> Panel-1</a> | <a href="https://github.com/BlackDemonHat/Discord-Rat/images/Screenshot2.png?raw=true?raw=true"> <img width="2000" src="https://github.com/BlackDemonHat/Discord-Rat/images/Screenshot2.png?raw=true?raw=true"> Panel-2</a> |<a href="https://github.com/BlackDemonHat/Discord-Rat/images/Screenshot3.png?raw=true?raw=trueg"> <img width="2000" src="https://github.com/BlackDemonHat/Discord-Rat/images/Screenshot3.png?raw=true?raw=true"> Panel-3 </a>||
 
 ---
 
