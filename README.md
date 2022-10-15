@@ -6,11 +6,11 @@
 </p>   
 
 <p align=center>  
-<a href=https://github.com/swagkarna><img src="https://img.shields.io/badge/Author-Swagkarna-red.svg?style=for-the-badge&label=Author" /></a>
+<a href=https://github.com/BlackDemonHat><img src="https://img.shields.io/badge/Author-BlackDemonHat-red.svg?style=for-the-badge&label=Author" /></a>
 
 <img src="https://img.shields.io/badge/Version-1.0-brightgreen?style=for-the-badge" >
-<img src="https://img.shields.io/github/stars/swagkarna/Rafel-Rat?style=for-the-badge">  
-<img src="https://img.shields.io/github/followers/swagkarna?label=Followers&style=for-the-badge">
+<img src="https://img.shields.io/github/stars/BlackDemonHat/Discord-Rat?style=for-the-badge">  
+<img src="https://img.shields.io/github/followers/BlackDemonHat?label=Followers&style=for-the-badge">
 </p>   
 
 * **If you like the tool and for my personal motivation so as to develop other tools please leave a +1 star** 
