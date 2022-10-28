@@ -127,17 +127,8 @@ Availaible commands are :
 8. post your bot server gild 
 ---
 
----
-### Building Server 
-1. Upload Files in server Folder to Your HostingPanel
-2. Now Open login.php 
-3. Enter Username ***Hande*** Password ***Ercel***
-4. Note : Make Sure your webhosting site uses Https and should have valid connection...I recommend 000webhost.com
-5. You can now use panel to send commands and also refresh after it
----
-### Rafel-Rat in Action [OLD] :
 
-https://user-images.githubusercontent.com/46685308/120080601-603c5380-c0d7-11eb-82b2-345d0bff7581.mp4
+
 
 Watch Video in Full Screen For Better Quality
 
