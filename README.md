@@ -28,38 +28,38 @@ pip3 install -r requirements.txt
 ```
 ---
 **Requirements:**\
-Python3,Windows(x64)
+Python3,Windows,linux
 ---
 ## **Modules**
 ```
 Availaible commands are :
---> /command help = will give all command
+--> /
 --> /message = Show a message box displaying your text / Syntax  = "/message example"
 --> /shell = Execute a shell command /Syntax  = "/shell whoami"
---> /command webcampic = Take a picture from the webcam
---> /command windowstart = Start logging current user window (logging is shown in the bot activity)
---> /command windowstop = Stop logging current user window 
+--> /camshot = Take a picture from the webcam
+--> /windowstart = Start logging current user window (logging is shown in the bot activity)
+--> /windowstop = Stop logging current user window 
 --> /voice = Make a voice say outloud a custom sentence / Syntax = "/voice test"
---> /command admincheck = Check if program has admin privileges
---> /command sysinfo = Gives info about infected computer
---> /command history = Get computer navigation history
+--> /admincheck = Check if program has admin privileges
+--> /sysinfo = Gives info about infected computer
+--> /history = Get computer navigation history
 --> /download = Download a file from infected computer
 --> /upload = Upload file from website to computer / Syntax = "/upload url" 
 --> /cd = Changes directory
 --> /write = Type your desired sentence on infected computer
 --> /wallpaper = Change infected computer wallpaper / Syntax = "/wallpaper url" 
---> /command clipboard = Retrieve infected computer clipboard content
---> /command startkeylogger = Starts a keylogger / Warning : Likely to trigger AV 
---> /command stopkeylogger = Stops keylogger
---> /command dumpkeylogger = Dumps the keylog
---> /command volumemax = Put volume at 100%
---> /command volumezero = Put volume at 0%
---> /command idletime = Get the idle time of user's on target computer
---> /command blockinput = Blocks user's keyboard and mouse / Warning : Admin rights are required
---> /command unblockinput = Unblocks user's keyboard and mouse / Warning : Admin rights are required
---> /command screenshot = Get the screenshot of the user's current screen
---> /command exit = Exit program
---> /command kill = Kill a session or all sessions except current one / Syntax = "!kill session-3" or "!kill all"
+--> /clipboard = Retrieve infected computer clipboard content
+--> /startkeylogger = Starts a keylogger / Warning : Likely to trigger AV 
+--> /stopkeylogger = Stops keylogger
+--> /dumpkeylogger = Dumps the keylog
+--> /volumemax = Put volume at 100%
+--> /volumezero = Put volume at 0%
+--> /idletime = Get the idle time of user's on target computer
+--> /blockinput = Blocks user's keyboard and mouse / Warning : Admin rights are required
+--> /unblockinput = Unblocks user's keyboard and mouse / Warning : Admin rights are required
+--> /screenshot = Get the screenshot of the user's current screen
+--> /exit = Exit program
+--> /kill = Kill a session or all sessions except current one / Syntax = "!kill session-3" or "!kill all"
 ```
 
 
