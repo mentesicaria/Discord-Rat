@@ -119,7 +119,7 @@ Availaible commands are :
 
 1.  create a user in https://000webhost.com
 2.  create a web and post public and private files
-3.  Open Project ***DiscordRat*** in Android Studio 
+3.  Create a discord server and bot
 4. Put the `your 000webhost link` link of server in python file
 5. open your web in public directory and 
 6. post your webhook
