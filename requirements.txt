@@ -1,15 +1,11 @@
 discord
 requests
 cv2
-win32clipboard
-win32process
-win32con
-win32gui
 pyautogui
 mss
 comtypes
 pycaw.pycaw
-wx
+wxPython
 pyaudio
 plyer
 pyngrok
