@@ -1,10 +1,10 @@
 discord
 requests
-cv2
+opencv-python
 pyautogui
 mss
 comtypes
-pycaw.pycaw
+pycaw
 wxPython
 pyaudio
 plyer
