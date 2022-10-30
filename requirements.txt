@@ -1,5 +1,6 @@
 discord
 requests
+pywin32
 opencv-python
 pyautogui
 mss
