@@ -315,7 +315,7 @@ async def activity(client):
 
 @client.event
 async def on_ready():
-    print("caca")
+    print("ready")
     global channel_name
     number = 0
 
