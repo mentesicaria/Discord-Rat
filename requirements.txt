@@ -1,4 +1,5 @@
-discord
+nextcord
+discord-webhook
 requests
 pywin32
 opencv-python
