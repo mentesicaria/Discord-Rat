@@ -122,9 +122,10 @@ Availaible commands are :
 3.  Create a discord server and bot
 4. Put the `your 000webhost link` link of server in python file
 5. open your web in public directory and 
-6. post your webhook
-7. post your bot token
-8. post your bot server gild 
+6. default password is a if you want to change it go public atr.php and password
+7. post your webhook
+8. post your bot token
+9. post your bot server gild 
 ---
 
 
